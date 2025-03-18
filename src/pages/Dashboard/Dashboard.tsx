@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Header from '../../components/Header/Header';
 import BatchTable from '../../components/BatchTable/BatchTable';
 import StatCard from '../../components/StatCard/StatCard';
@@ -8,6 +9,7 @@ import { Batch, BatchStats, ActivityEvent } from '../../types';
 import './Dashboard.css';
 
 const Dashboard: React.FC = () => {
+  const navigate = useNavigate();
   // Mock data - in a real app, this would come from an API
   const [batches] = useState<Batch[]>([
     {
@@ -48,8 +50,8 @@ const Dashboard: React.FC = () => {
   };
 
   const handleUploadLeadList = () => {
-    console.log('Upload new lead list clicked');
-    // In a real app, you would show a file upload dialog
+    // Navigate to the upload view
+    navigate('/upload');
   };
 
   return (

@@ -1,0 +1,175 @@
+.upload-view {
+  min-height: 100vh;
+  width: 100vw;
+  background-color: #f8f9fa;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+
+.upload-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.upload-card {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  width: 100%;
+  max-width: 800px;
+  margin-bottom: 1.5rem;
+}
+
+.upload-title {
+  color: #333;
+  font-size: 1.8rem;
+  margin: 0 0 2rem 0;
+  font-weight: 600;
+  text-align: center;
+}
+
+.dropzone {
+  border: 2px dashed #ccc;
+  border-radius: 4px;
+  padding: 2.5rem;
+  text-align: center;
+  margin-bottom: 2rem;
+  transition: all 0.3s ease;
+  background-color: #f9f9f9;
+}
+
+.dropzone.dragging {
+  border-color: #4285f4;
+  background-color: rgba(66, 133, 244, 0.05);
+}
+
+.dropzone p {
+  color: #666;
+  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+}
+
+.or-divider {
+  margin: 1rem 0;
+  color: #888;
+}
+
+.selected-file {
+  background-color: #e8f0fe;
+  padding: 0.75rem;
+  border-radius: 4px;
+  margin-bottom: 2rem;
+}
+
+.options-section {
+  margin-bottom: 2rem;
+}
+
+.options-section h3 {
+  color: #333;
+  font-size: 1.2rem;
+  margin: 0 0 1rem 0;
+  font-weight: 600;
+}
+
+.options-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.option-item {
+  display: flex;
+  align-items: center;
+}
+
+.checkbox-container {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.checkbox-container input[type="checkbox"] {
+  margin-right: 0.5rem;
+  cursor: pointer;
+  width: 18px;
+  height: 18px;
+  accent-color: #4285f4;
+}
+
+.checkbox-label {
+  font-size: 1rem;
+  color: #333;
+}
+
+.batch-name-section {
+  margin-bottom: 1rem;
+}
+
+.batch-name-section label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #333;
+}
+
+.batch-name-input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.batch-name-input:focus {
+  outline: none;
+  border-color: #4285f4;
+  box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
+}
+
+.process-button-container {
+  max-width: 800px;
+  width: 100%;
+}
+
+/* Styling the custom checkbox */
+input[type="checkbox"] {
+  position: relative;
+  border: 2px solid #4285f4;
+  border-radius: 2px;
+  background: none;
+  cursor: pointer;
+  line-height: 0;
+  outline: 0;
+  padding: 0 !important;
+  vertical-align: text-top;
+  height: 20px;
+  width: 20px;
+  opacity: 1;
+}
+
+input[type="checkbox"]:checked {
+  background-color: #4285f4;
+}
+
+input[type="checkbox"]:checked:before {
+  content: '';
+  position: absolute;
+  right: 5px;
+  top: 1px;
+  width: 6px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+@media (max-width: 768px) {
+  .options-grid {
+    grid-template-columns: 1fr;
+  }
+}
