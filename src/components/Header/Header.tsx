@@ -13,17 +13,11 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
     navigate('/dashboard');
   };
 
-  const handleSettingsClick = () => {
-    // In a real app, you would navigate to a settings page
-    console.log('Settings clicked');
-  };
-
   return (
     <header className="header">
       <h1 className="header-title">{title}</h1>
       <div className="header-actions">
         <button className="header-button" onClick={handleBatchesClick}>Batches</button>
-        <button className="header-button" onClick={handleSettingsClick}>Settings</button>
       </div>
     </header>
   );

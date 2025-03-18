@@ -118,7 +118,7 @@ const UploadView: React.FC = () => {
 
   return (
     <div className="upload-view">
-      <Header title="Lead Enrichment" />
+      <Header title="Upload Leads List" />
       
       <div className="upload-container">
         <div className="upload-card">

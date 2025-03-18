@@ -40,8 +40,8 @@ const Dashboard: React.FC = () => {
   ]);
 
   const handleViewBatch = (batchId: string) => {
-    console.log(`View batch with id: ${batchId}`);
-    // In a real app, you would navigate to a batch detail page
+    // Navigate to batch details page
+    navigate(`/batch/${batchId}`);
   };
 
   const handleExportBatch = (batchId: string) => {
@@ -56,7 +56,7 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="dashboard">
-      <Header title="Lead Enrichment Dashboard" />
+      <Header title="Dashboard"/>
 
       <div className="dashboard-content">
         <BatchTable 
