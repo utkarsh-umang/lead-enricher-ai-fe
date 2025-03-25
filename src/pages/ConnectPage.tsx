@@ -1,12 +1,46 @@
 import { useState } from 'react';
-import { Download, FileSpreadsheet, Copy, CheckCircle, ExternalLink, Timer, ArrowRight } from 'lucide-react';
+import { 
+  FileSpreadsheet, 
+  Copy, 
+  CheckCircle, 
+  ExternalLink, 
+  Timer, 
+  ArrowRight,
+  CopyCheck,
+  FileText,
+  Loader,
+  CheckSquare,
+  AlertCircle
+} from 'lucide-react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { clsx } from 'clsx';
+import { verifyGoogleSheetAccess } from '../services/google-sheet-api';
+
+// Type for successful verification
+interface SuccessfulVerification {
+  accessible: true;
+  title: string;
+  spreadsheet_id: string;
+  sheet_names: string[];
+}
+
+// Type for failed verification
+interface FailedVerification {
+  accessible: false;
+  error: string;
+}
+
+// Combined type
+type ValidationResult = SuccessfulVerification | FailedVerification | null;
 
 const ConnectPage = () => {
   const [sheetUrl, setSheetUrl] = useState('');
   const [isEmailCopied, setIsEmailCopied] = useState(false);
-  const serviceEmail = 'leads-enrichment@service-account.com';
+  const [isValidating, setIsValidating] = useState(false);
+  const [validationResult, setValidationResult] = useState<ValidationResult>(null);
+  
+  const serviceEmail = 'umang-utk@url-to-email-445616.iam.gserviceaccount.com';
+  const templateSheetUrl = 'https://docs.google.com/spreadsheets/d/1FwLYwcc8zi5Jl-UuOdJ97O34VfnWQxV6E1oJr_jP5a0/edit?usp=sharing';
 
   const handleCopyEmail = () => {
     navigator.clipboard.writeText(serviceEmail);
@@ -14,45 +48,113 @@ const ConnectPage = () => {
     setTimeout(() => setIsEmailCopied(false), 2000);
   };
 
-  const handleDownloadTemplate = () => {
-    // In a real app, this would trigger a template file download
-    console.log('Downloading template...');
+  // Handle URL validation using the fetch API service
+  const handleValidateUrl = async () => {
+    if (!sheetUrl.trim()) {
+      setValidationResult({
+        accessible: false,
+        error: 'Please enter a Google Sheet URL',
+      });
+      return;
+    }
+
+    setIsValidating(true);
+    setValidationResult(null);
+
+    try {
+      // Call our API service function that uses fetch
+      const result = await verifyGoogleSheetAccess(sheetUrl);
+      setValidationResult(result);
+    } catch (error) {
+      setValidationResult({
+        accessible: false,
+        error: 'An unexpected error occurred. Please try again.',
+      });
+    } finally {
+      setIsValidating(false);
+    }
+  };
+
+  const resetValidation = () => {
+    setValidationResult(null);
   };
 
   return (
     <div className="min-h-[calc(100vh-64px)] bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
+        {/* Header section */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
             Connect Your Lead List
           </h1>
           <p className="text-lg text-gray-600">
-            Download our template, fill it with your leads, and connect via Google Sheets for AI-powered enrichment.
+            Make a copy of our template lead list sheet, fill it with your leads, and share the sheet for AI-powered enrichment.
           </p>
         </div>
 
-        {/* Template Download Section */}
+        {/* Template Copy Section */}
         <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200 mb-8">
           <div className="flex items-start justify-between">
             <div>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-3">Download Template</h2>
+              <h2 className="text-2xl font-semibold text-gray-900 mb-3">Copy Template</h2>
               <p className="text-gray-600 mb-4">
-                Start with our pre-formatted template to ensure your lead list includes all necessary fields:
-                company name, website, and contact information.
+                Start with our pre-formatted template to ensure your lead list includes all necessary fields
               </p>
               <ul className="list-disc list-inside text-gray-600 mb-6">
-                <li>Company Name & Website</li>
-                <li>Contact Person Details</li>
-                <li>Company Size & Location</li>
+                <li>Person Name</li>
+                <li>Person Linkedin URL</li>
+                <li>Company Website</li>
               </ul>
             </div>
-            <button
-              onClick={handleDownloadTemplate}
-              className="flex items-center px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
-            >
-              <Download className="h-5 w-5 mr-2" />
-              Download Template
-            </button>
+            <Dialog.Root>
+              <Dialog.Trigger asChild>
+                <button className="flex items-center px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
+                  <CopyCheck className="h-5 w-5 mr-2" />
+                  Copy Template
+                </button>
+              </Dialog.Trigger>
+              <Dialog.Portal>
+                <Dialog.Overlay className="fixed inset-0 bg-black/50" />
+                <Dialog.Content className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl p-8 w-full max-w-md">
+                  <Dialog.Title className="text-xl font-semibold mb-4">
+                    Template Google Sheet
+                  </Dialog.Title>
+                  <div className="mb-6">
+                    <p className="text-gray-600 mb-4">
+                      Follow these steps to use our template:
+                    </p>
+                    <ol className="list-decimal list-inside space-y-3 text-gray-600 mb-6">
+                      <li>Click the link below to open our template</li>
+                      <li className="flex items-start">
+                        <span className="mr-2">Once the sheet opens, select</span>
+                        <div className="flex items-center px-2 py-1 bg-gray-100 rounded text-sm">
+                          <FileText className="h-4 w-4 mr-1" />
+                          <span>File</span>
+                          <ArrowRight className="h-3 w-3 mx-1" />
+                          <span>Make a copy</span>
+                        </div>
+                      </li>
+                      <li>Fill your copy with your lead data</li>
+                      <li>Share your filled copy with our service account (step 2 below)</li>
+                    </ol>
+                    <a 
+                      href={templateSheetUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center w-full py-3 px-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                    >
+                      <ExternalLink className="h-5 w-5 mr-2" />
+                      Open Template Sheet
+                    </a>
+                  </div>
+                  <Dialog.Close asChild>
+                    <button className="w-full py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 mt-4">
+                      Close
+                    </button>
+                  </Dialog.Close>
+                </Dialog.Content>
+              </Dialog.Portal>
+            </Dialog.Root>
           </div>
         </div>
 
@@ -61,6 +163,7 @@ const ConnectPage = () => {
           <h2 className="text-2xl font-semibold text-gray-900 mb-6">Connect Google Sheet</h2>
           
           <div className="space-y-6">
+            {/* Step 1: Share Sheet */}
             <div className="flex items-start space-x-4">
               <div className="flex-shrink-0 w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center">
                 <span className="text-indigo-600 font-semibold">1</span>
@@ -125,6 +228,7 @@ const ConnectPage = () => {
               </div>
             </div>
 
+            {/* Step 2: Validate URL - This is where our API integration happens */}
             <div className="flex items-start space-x-4">
               <div className="flex-shrink-0 w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center">
                 <span className="text-indigo-600 font-semibold">2</span>
@@ -135,17 +239,92 @@ const ConnectPage = () => {
                   Copy your Google Sheet URL and paste it below
                 </p>
                 <div className="space-y-4">
-                  <textarea
-                    value={sheetUrl}
-                    onChange={(e) => setSheetUrl(e.target.value)}
-                    placeholder="https://docs.google.com/spreadsheets/d/..."
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                    rows={3}
-                  />
-                  <button className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
-                    Validate URL
-                    <ArrowRight className="ml-2 h-4 w-4" />
+                  <div>
+                    {/* Text input for Google Sheet URL */}
+                    <textarea
+                      value={sheetUrl}
+                      onChange={(e) => {
+                        setSheetUrl(e.target.value);
+                        resetValidation();
+                      }}
+                      placeholder="https://docs.google.com/spreadsheets/d/..."
+                      className={clsx(
+                        "w-full p-3 border rounded-lg focus:ring-2 focus:ring-indigo-500",
+                        validationResult && !validationResult.accessible
+                          ? "border-red-300 focus:border-red-500" 
+                          : validationResult && validationResult.accessible
+                          ? "border-green-300 focus:border-green-500"
+                          : "border-gray-300 focus:border-indigo-500"
+                      )}
+                      rows={3}
+                    />
+
+                    {/* Validation result messages */}
+                    {validationResult && (
+                      <div 
+                        className={clsx(
+                          "mt-2 text-sm flex items-start space-x-2",
+                          validationResult.accessible ? "text-green-600" : "text-red-600"
+                        )}
+                      >
+                        {validationResult.accessible ? (
+                          <CheckSquare className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                        ) : (
+                          <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                        )}
+                        <span>
+                          {validationResult.accessible 
+                            ? "Successfully connected to the Google Sheet" 
+                            : validationResult.error}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Show sheet title on successful validation */}
+                    {validationResult && validationResult.accessible && (
+                      <div className="mt-2 p-3 bg-green-50 border border-green-100 rounded-lg text-green-800">
+                        <p className="font-medium">Connected to sheet:</p>
+                        <p className="text-green-700">{validationResult.title}</p>
+                        {validationResult.sheet_names.length > 0 && (
+                          <p className="text-green-700 text-sm mt-1">
+                            Available sheets: {validationResult.sheet_names.join(', ')}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Validate URL button - calls our API service */}
+                  <button 
+                    onClick={handleValidateUrl}
+                    disabled={isValidating || !sheetUrl.trim()}
+                    className={clsx(
+                      "flex items-center px-4 py-2 rounded-lg",
+                      (isValidating || !sheetUrl.trim()) 
+                        ? "bg-indigo-300 text-white cursor-not-allowed" 
+                        : "bg-indigo-600 text-white hover:bg-indigo-700"
+                    )}
+                  >
+                    {isValidating ? (
+                      <>
+                        <Loader className="h-4 w-4 mr-2 animate-spin" />
+                        Validating...
+                      </>
+                    ) : (
+                      <>
+                        Validate Connection
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </>
+                    )}
                   </button>
+
+                  {/* Continue button appears after successful validation */}
+                  {validationResult && validationResult.accessible && (
+                    <button className="mt-2 w-full flex items-center justify-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                      Continue to Enrichment
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
