@@ -1,5 +1,5 @@
-import Navbar from './components/Navbar/Navbar';
-import ConnectPage from './pages/ConnectPage/ConnectPage';
+import Navbar from './components/Navbar';
+import ConnectPage from './pages/ConnectPage';
 
 function App() {
   return (
