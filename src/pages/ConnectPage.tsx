@@ -15,6 +15,7 @@ import {
 import * as Dialog from '@radix-ui/react-dialog';
 import { clsx } from 'clsx';
 import { verifyGoogleSheetAccess } from '../services/google-sheet-api';
+import WavyBackground from '../components/Background';
 
 // Type for successful verification
 interface SuccessfulVerification {
@@ -95,8 +96,11 @@ const ConnectPage = () => {
   };
 
   return (
-    <div className="min-h-[calc(100vh-64px)] bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-[calc(100vh-64px)] bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+      {/* Background */}
+      <WavyBackground />
+      
+      <div className="max-w-4xl mx-auto relative z-10">
         {/* Header section */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
@@ -108,7 +112,7 @@ const ConnectPage = () => {
         </div>
 
         {/* Template Copy Section */}
-        <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200 mb-8">
+        <div className="bg-white p-8 rounded-xl shadow-md border border-gray-200 mb-8 bg-opacity-95 backdrop-filter backdrop-blur-sm">
           <div className="flex items-start justify-between">
             <div>
               <h2 className="text-2xl font-semibold text-gray-900 mb-3">Copy Template</h2>
@@ -174,7 +178,7 @@ const ConnectPage = () => {
         </div>
 
         {/* Google Sheet Connection Section */}
-        <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200 mb-8">
+        <div className="bg-white p-8 rounded-xl shadow-md border border-gray-200 mb-8 bg-opacity-95 backdrop-filter backdrop-blur-sm">
           <h2 className="text-2xl font-semibold text-gray-900 mb-6">Connect Google Sheet</h2>
           
           <div className="space-y-6">
@@ -336,7 +340,7 @@ const ConnectPage = () => {
                   {/* Continue button appears after successful validation */}
                   {validationResult && validationResult.accessible && (
                     <button 
-                      onClick={handleContinueToEnrichment} // Added onClick handler here
+                      onClick={handleContinueToEnrichment}
                       className="mt-2 w-full flex items-center justify-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
                     >
                       Continue to Enrichment
@@ -350,7 +354,7 @@ const ConnectPage = () => {
         </div>
 
         {/* Information Section */}
-        <div className="bg-indigo-50 p-8 rounded-xl">
+        <div className="bg-indigo-50 p-8 rounded-xl bg-opacity-90 backdrop-filter backdrop-blur-sm">
           <h2 className="text-2xl font-semibold text-indigo-900 mb-6">What Happens Next?</h2>
           <div className="grid md:grid-cols-2 gap-6">
             <div className="flex items-start space-x-4">
