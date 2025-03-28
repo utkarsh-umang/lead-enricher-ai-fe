@@ -79,6 +79,21 @@ const ConnectPage = () => {
     setValidationResult(null);
   };
 
+  // Handler to redirect to SheetDetailsPage with URL change
+  const handleContinueToEnrichment = () => {
+    if (validationResult && validationResult.accessible) {
+      // Store validation data in localStorage
+      localStorage.setItem('sheetDetails', JSON.stringify({
+        spreadsheetId: validationResult.spreadsheet_id,
+        sheetTitle: validationResult.title,
+        sheetNames: validationResult.sheet_names
+      }));
+      
+      // Redirect to the sheet details page
+      window.location.href = '/sheet-details';
+    }
+  };
+
   return (
     <div className="min-h-[calc(100vh-64px)] bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
@@ -320,7 +335,10 @@ const ConnectPage = () => {
 
                   {/* Continue button appears after successful validation */}
                   {validationResult && validationResult.accessible && (
-                    <button className="mt-2 w-full flex items-center justify-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                    <button 
+                      onClick={handleContinueToEnrichment} // Added onClick handler here
+                      className="mt-2 w-full flex items-center justify-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                    >
                       Continue to Enrichment
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </button>

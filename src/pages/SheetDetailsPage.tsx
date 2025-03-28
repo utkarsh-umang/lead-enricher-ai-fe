@@ -1,9 +1,42 @@
+import { useState, useEffect } from 'react';
 import { FileSpreadsheet, Play, CheckCircle2 } from 'lucide-react';
 
 const SheetDetailsPage = () => {
+  const [sheetDetails, setSheetDetails] = useState({
+    spreadsheetId: '',
+    title: 'Lead List',
+    sheetUrl: 'https://docs.google.com/spreadsheets/d/example-sheet-id/edit',
+    availableSheets: []
+  });
+
+  useEffect(() => {
+    // Retrieve sheet details from localStorage
+    const storedSheetDetails = localStorage.getItem('sheetDetails');
+    
+    if (storedSheetDetails) {
+      try {
+        const parsedDetails = JSON.parse(storedSheetDetails);
+        setSheetDetails({
+          ...sheetDetails,
+          spreadsheetId: parsedDetails.spreadsheetId || '',
+          title: parsedDetails.sheetTitle || 'Lead List',
+          sheetUrl: parsedDetails.spreadsheetId 
+            ? `https://docs.google.com/spreadsheets/d/${parsedDetails.spreadsheetId}/edit` 
+            : sheetDetails.sheetUrl,
+          availableSheets: parsedDetails.sheetNames || []
+        });
+      } catch (error) {
+        console.error('Error parsing stored sheet details:', error);
+      }
+    } else {
+      // If no stored details are found, redirect back to the connect page
+      window.location.href = '/';
+    }
+  }, []);
+
   const handleStartWorkflow = () => {
     // This will be connected to the API later
-    console.log('Starting workflow...');
+    console.log('Starting workflow for spreadsheet:', sheetDetails.spreadsheetId);
   };
 
   return (
@@ -33,25 +66,23 @@ const SheetDetailsPage = () => {
               <div>
                 <dt className="text-sm font-medium text-gray-500">Sheet Name</dt>
                 <dd className="mt-1 text-lg font-semibold text-gray-900">
-                  Q1 2024 Lead List
+                  {sheetDetails.title}
                 </dd>
-              </div>
-              <div>
-                <dt className="text-sm font-medium text-gray-500">Last Updated</dt>
-                <dd className="mt-1 text-lg text-gray-900">
-                  March 15, 2024 at 2:30 PM
-                </dd>
-              </div>
-              <div>
-                <dt className="text-sm font-medium text-gray-500">Total Leads</dt>
-                <dd className="mt-1 text-lg text-gray-900">250</dd>
               </div>
               <div>
                 <dt className="text-sm font-medium text-gray-500">Sheet URL</dt>
                 <dd className="mt-1 text-sm text-gray-600 break-all">
-                  https://docs.google.com/spreadsheets/d/example-sheet-id/edit
+                  {sheetDetails.sheetUrl}
                 </dd>
               </div>
+              {sheetDetails.availableSheets.length > 0 && (
+                <div className="sm:col-span-2">
+                  <dt className="text-sm font-medium text-gray-500">Available Sheets</dt>
+                  <dd className="mt-1 text-sm text-gray-900">
+                    {sheetDetails.availableSheets.join(', ')}
+                  </dd>
+                </div>
+              )}
             </dl>
           </div>
 
