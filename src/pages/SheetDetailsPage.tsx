@@ -169,7 +169,7 @@ const SheetDetailsPage = () => {
                       </svg>
                     )}
                   </div>
-                  <div className="ml-3">
+                  <div className="ml-3 w-full">
                     <h3 className={`text-sm font-medium ${
                       verificationResult.valid ? 'text-green-800' : 'text-red-800'
                     }`}>
@@ -182,13 +182,13 @@ const SheetDetailsPage = () => {
                     </div>
                     
                     {verificationResult.found_headers && verificationResult.found_headers.length > 0 && (
-                      <div className="mt-4">
+                      <div className="mt-4 w-full">
                         <h4 className="text-sm font-medium text-gray-700">Found Headers:</h4>
-                        <div className="mt-2 grid grid-cols-2 gap-2">
+                        <div className="mt-2 flex flex-col w-full">
                           {verificationResult.found_headers.map((header: any, index: any) => (
                             <div 
                               key={index}
-                              className="px-2 py-1 bg-white rounded border border-gray-200 text-xs"
+                              className="px-2 py-1 bg-white rounded border border-gray-200 text-xs mb-2"
                             >
                               {header}
                             </div>
