@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { FileSpreadsheet, Play, CheckCircle2 } from 'lucide-react';
-import WavyBackground from '../components/Background';
 
 const SheetDetailsPage = () => {
   const [sheetDetails, setSheetDetails] = useState({
@@ -71,12 +70,9 @@ const SheetDetailsPage = () => {
   };
 
   return (
-    <div className="min-h-[calc(100vh-64px)] bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-      {/* Background */}
-      <WavyBackground />
-      
-      <div className="max-w-4xl mx-auto relative z-10">
-        <div className="bg-white p-8 rounded-xl shadow-md border border-gray-200 bg-opacity-95 backdrop-filter backdrop-blur-sm">
+    <div className="min-h-[calc(100vh-64px)] bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-4xl mx-auto">
+        <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200">
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center">
               <FileSpreadsheet className="h-8 w-8 text-indigo-600" />
