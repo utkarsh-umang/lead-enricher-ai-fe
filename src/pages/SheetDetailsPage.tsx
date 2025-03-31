@@ -202,11 +202,17 @@ const SheetDetailsPage = () => {
                         <button 
                           className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
                           onClick={() => {
-                            console.log('Starting enrichment process for verified sheet');
-                            // Here you would call your next API to start the enrichment
+                            localStorage.setItem('enrichmentReadySheet', JSON.stringify({
+                              spreadsheetId: sheetDetails.spreadsheetId,
+                              sheetTitle: sheetDetails.title,
+                              sheetUrl: sheetDetails.sheetUrl,
+                              sheetName: sheetDetails.availableSheets.length > 0 ? sheetDetails.availableSheets[0] : 'Sheet1',
+                              verificationData: verificationResult
+                            }));
+                            window.location.href = '/enrichment-status';
                           }}
                         >
-                          Start Enrichment
+                          Continue to Enrichment
                         </button>
                       </div>
                     )}

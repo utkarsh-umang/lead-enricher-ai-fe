@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import ConnectPage from './pages/ConnectPage';
 import SheetDetailsPage from './pages/SheetDetailsPage';
+import EnrichmentStatusPage from './pages/EnrichmentPage';
 
 // Simple route handler
 const App = () => {
@@ -26,6 +27,8 @@ const App = () => {
     switch (currentPath) {
       case '/sheet-details':
         return <SheetDetailsPage />;
+      case '/enrichment-status':
+        return <EnrichmentStatusPage />;
       case '/':
       default:
         return <ConnectPage />;

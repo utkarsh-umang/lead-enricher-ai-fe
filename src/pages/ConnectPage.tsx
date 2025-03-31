@@ -339,7 +339,7 @@ const ConnectPage = () => {
                       onClick={handleContinueToEnrichment} // Added onClick handler here
                       className="mt-2 w-full flex items-center justify-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
                     >
-                      Continue to Enrichment
+                      Get Sheet Details
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </button>
                   )}
