@@ -40,7 +40,7 @@ const ConnectPage = () => {
   const [validationResult, setValidationResult] = useState<ValidationResult>(null);
   
   const serviceEmail = 'umang-utk@url-to-email-445616.iam.gserviceaccount.com';
-  const templateSheetUrl = 'https://docs.google.com/spreadsheets/d/1FwLYwcc8zi5Jl-UuOdJ97O34VfnWQxV6E1oJr_jP5a0/edit?usp=sharing';
+  const templateSheetUrl = 'https://docs.google.com/spreadsheets/d/1otxt0-_eE31xDV_G4vfsnTyq0aiZef4VdWoKJRNU-2c/edit?usp=sharing';
 
   const handleCopyEmail = () => {
     navigator.clipboard.writeText(serviceEmail);

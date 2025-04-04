@@ -1,6 +1,6 @@
 const WavyBackground = () => {
   return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+    <div className="absolute inset-0 overflow-hidden pointer-events-none -z-10">
       {/* Top wave */}
       <svg 
         className="absolute top-0 left-0 w-full opacity-10 text-indigo-600"
