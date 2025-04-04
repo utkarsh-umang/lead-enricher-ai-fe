@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { FileSpreadsheet, Play, CheckCircle2, ArrowLeft, RefreshCw } from 'lucide-react';
+import { API_BASE_URL } from "../config/env";
 
 const EnrichmentStatusPage = () => {
   const [sheetDetails, setSheetDetails] = useState({
@@ -73,7 +74,7 @@ const EnrichmentStatusPage = () => {
     setIsLoading(true);
     
     try {
-      const response = await fetch('http://localhost:8000/google-sheet/get-last-filled-rows', {
+      const response = await fetch(`${API_BASE_URL}/google-sheet/get-last-filled-rows`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -157,7 +158,7 @@ const EnrichmentStatusPage = () => {
       };
       
       // Call the orchestrator API
-      const response = await fetch('http://localhost:8000/orchestrator/start', {
+      const response = await fetch(`${API_BASE_URL}/orchestrator/start`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -200,7 +201,7 @@ const EnrichmentStatusPage = () => {
   const pollJobStatus = async (jobId: any) => {
     if (!jobId) return;
     try {
-      const response = await fetch(`http://localhost:8000/orchestrator/status/${jobId}`, {
+      const response = await fetch(`${API_BASE_URL}/orchestrator/status/${jobId}`, {
         method: 'GET',
         headers: {
           'accept': 'application/json'

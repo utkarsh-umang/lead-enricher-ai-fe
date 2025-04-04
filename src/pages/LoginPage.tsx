@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Lock, Mail, AlertCircle, Brain } from 'lucide-react';
+import { API_BASE_URL } from "../config/env";
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -30,7 +31,7 @@ const LoginPage = () => {
     
     try {
       // Call the actual login API
-      const response = await fetch('http://localhost:8000/auth/login', {
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

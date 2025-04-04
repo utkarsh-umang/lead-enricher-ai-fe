@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { FileSpreadsheet, Play, CheckCircle2 } from 'lucide-react';
+import { API_BASE_URL } from "../config/env";
 
 const SheetDetailsPage = () => {
   const [sheetDetails, setSheetDetails] = useState({
@@ -43,7 +44,7 @@ const SheetDetailsPage = () => {
     setVerificationResult(null);
     
     try {
-      const response = await fetch('http://localhost:8000/google-sheet/verify-columns', {
+      const response = await fetch(`${API_BASE_URL}/google-sheet/verify-columns`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
