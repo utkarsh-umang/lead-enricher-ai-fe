@@ -14,6 +14,9 @@ const EnrichmentStatusPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [lastFilledInfo, setLastFilledInfo] = useState<any>(null);
   const [isStartingEnrichment, setIsStartingEnrichment] = useState(false);
+  const [orchestrationJobId, setOrchestrationJobId] = useState<any>(null);
+  const [orchestrationStatus, setOrchestrationStatus] = useState<any>(null);
+  const [isPolling, setIsPolling] = useState(false);
 
   useEffect(() => {
     // Retrieve sheet details from localStorage
@@ -42,13 +45,28 @@ const EnrichmentStatusPage = () => {
     }
   }, []);
 
+  useEffect(() => {
+    let pollingInterval: any;
+    
+    if (orchestrationJobId && isPolling) {
+      pollingInterval = setInterval(() => {
+        pollJobStatus(orchestrationJobId);
+      }, 30000); // Poll every 30 seconds
+    }
+    
+    return () => {
+      if (pollingInterval) {
+        clearInterval(pollingInterval);
+      }
+    };
+  }, [orchestrationJobId, isPolling]);
+
   const handleGetCurrentStatus = async () => {
     if (!sheetDetails.spreadsheetId) return;
     
     setIsLoading(true);
     
     try {
-      // Make the API call to get last filled rows
       const response = await fetch('http://localhost:8000/google-sheet/get-last-filled-rows', {
         method: 'POST',
         headers: {
@@ -117,31 +135,23 @@ const EnrichmentStatusPage = () => {
     }
   };
 
-  const handleStartEnrichment = async () => {
-    if (!lastFilledInfo) return;
+  // New function to call orchestrator API
+  const handleStartOrchestration = async () => {
+    if (!sheetDetails.sheetUrl) return;
     
     setIsStartingEnrichment(true);
     
     try {
-      // Get data from columnsStatus to construct the last_filled_info
-      const columnLastFilled: any = {};
-      columnsStatus.forEach((column: any) => {
-        columnLastFilled[column.column] = {
-          last_row: column.filledRows
-        };
-      });
-      
-      // Prepare payload for the enrichment process
+      // Prepare payload for the orchestration process
       const payload = {
         spreadsheet_url: sheetDetails.sheetUrl,
         sheet_name: sheetDetails.sheetName,
-        last_filled_info: columnLastFilled
+        batch_size: 10,
+        process_all: false
       };
       
-      console.log('Starting enrichment with payload:', payload);
-      
-      // API call to start the enrichment process
-      const response = await fetch('http://localhost:8000/google-sheet/start-enrichment', {
+      // Call the orchestrator API
+      const response = await fetch('http://localhost:8000/orchestrator/start', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -155,21 +165,62 @@ const EnrichmentStatusPage = () => {
       }
       
       const data = await response.json();
-      console.log('Enrichment started:', data);
-      
-      // Show success message or redirect to a progress tracking page
-      alert('Enrichment process started successfully! You can monitor progress on this page.');
-      
-      // Refresh the status after starting enrichment
-      setTimeout(() => {
-        handleGetCurrentStatus();
-      }, 3000);
+      if (data.job_id) {
+        setOrchestrationJobId(data.job_id);
+        setOrchestrationStatus({
+          status: 'running',
+          message: 'Orchestration process started. Processing rows...'
+        });
+        setIsPolling(true);
+        // Show success message
+        alert('Orchestration process started successfully! You can monitor progress on this page.');
+      } else {
+        throw new Error('No job ID returned from the API');
+      }
       
     } catch (error: any) {
-      console.error('Error starting enrichment:', error);
-      alert(`Failed to start enrichment process: ${error.message}`);
+      console.error('Error starting orchestration:', error);
+      alert(`Failed to start orchestration process: ${error.message}`);
+      setOrchestrationStatus({
+        status: 'error',
+        message: `Failed to start: ${error.message}`
+      });
     } finally {
       setIsStartingEnrichment(false);
+    }
+  };
+
+  // Function to poll for job status
+  const pollJobStatus = async (jobId: any) => {
+    if (!jobId) return;
+    try {
+      const response = await fetch(`http://localhost:8000/orchestrator/status/${jobId}`, {
+        method: 'GET',
+        headers: {
+          'accept': 'application/json'
+        }
+      });
+      if (!response.ok) {
+        throw new Error(`API returned status ${response.status}`);
+      }
+      const data = await response.json();
+      // Update status in state
+      setOrchestrationStatus({
+        ...data,
+        lastUpdated: new Date().toLocaleTimeString()
+      });
+      if (data.status === 'completed' || data.status === 'error') {
+        setIsPolling(false);
+        // Refresh the column status to show the latest data
+        handleGetCurrentStatus();
+      }
+    } catch (error: any) {
+      console.error('Error polling job status:', error);
+      setOrchestrationStatus((prev: any) => ({
+        ...prev,
+        error: `Polling error: ${error.message}`,
+        lastUpdated: new Date().toLocaleTimeString()
+      }));
     }
   };
 
@@ -185,6 +236,132 @@ const EnrichmentStatusPage = () => {
     if (column.status === 'complete') return 'bg-green-50';
     if (column.filledRows > 0) return 'bg-yellow-50';
     return 'bg-gray-50';
+  };
+
+  // Helper function to render orchestration status
+  const renderOrchestrationStatus = () => {
+    if (!orchestrationStatus) return null;
+    
+    const { status, processed_rows, total_rows, row_errors, message, lastUpdated } = orchestrationStatus;
+    
+    let statusColor = 'bg-gray-100 text-gray-800';
+    let statusIcon = <RefreshCw className="h-5 w-5 mr-2" />;
+    
+    if (status === 'running') {
+      statusColor = 'bg-blue-100 text-blue-800';
+      statusIcon = (
+        <svg className="animate-spin h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+      );
+    } else if (status === 'completed') {
+      statusColor = 'bg-green-100 text-green-800';
+      statusIcon = <CheckCircle2 className="h-5 w-5 mr-2" />;
+    } else if (status === 'error') {
+      statusColor = 'bg-red-100 text-red-800';
+      statusIcon = (
+        <svg className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      );
+    }
+    
+    return (
+      <div className="mt-8 border-t border-gray-200 pt-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">
+          Orchestration Status
+        </h2>
+        
+        <div className="bg-white p-4 border border-gray-200 rounded-lg shadow-sm">
+          <div className="flex items-center mb-4">
+            <span className={`px-3 py-1 ${statusColor} rounded-full flex items-center text-sm font-medium`}>
+              {statusIcon}
+              {status === 'running' ? 'Running' : 
+               status === 'completed' ? 'Completed' : 
+               status === 'error' ? 'Error' : 'Unknown'}
+            </span>
+            
+            {lastUpdated && (
+              <span className="ml-4 text-sm text-gray-500">
+                Last updated: {lastUpdated}
+              </span>
+            )}
+          </div>
+          
+          {message && (
+            <p className="text-sm text-gray-700 mb-3">
+              {message}
+            </p>
+          )}
+          
+          {(processed_rows !== undefined && total_rows !== undefined) && (
+            <div className="mb-3">
+              <div className="flex justify-between text-sm text-gray-600 mb-1">
+                <span>Progress: {processed_rows} of {total_rows} rows</span>
+                <span>{Math.round((processed_rows / total_rows) * 100)}%</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2.5">
+                <div 
+                  className="bg-blue-600 h-2.5 rounded-full" 
+                  style={{ width: `${Math.round((processed_rows / total_rows) * 100)}%` }}
+                ></div>
+              </div>
+            </div>
+          )}
+          
+          {row_errors && Object.keys(row_errors).length > 0 && (
+            <div className="mt-4">
+              <h3 className="text-sm font-medium text-gray-700 mb-2">Errors:</h3>
+              <div className="max-h-40 overflow-y-auto bg-gray-50 p-3 rounded-md text-sm">
+                {Object.entries(row_errors).map(([row, error]: [any, any]) => (
+                  <div key={row} className="mb-2 last:mb-0">
+                    <span className="font-semibold">Row {row}:</span> {error}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          
+          {orchestrationStatus.progress && (
+            <div className="mt-4">
+              <h3 className="text-sm font-medium text-gray-700 mb-2">Row Progress:</h3>
+              <div className="max-h-40 overflow-y-auto bg-gray-50 p-3 rounded-md text-sm">
+                {Object.entries(orchestrationStatus.progress).map(([row, rowData]: [any, any]) => (
+                  <div key={row} className="mb-2 last:mb-0 border-b pb-2 last:border-b-0">
+                    <span className="font-semibold">Row {row}:</span> 
+                    {rowData.steps?.map((step: any, i: any) => (
+                      <span key={i} className="ml-2">
+                        {step.step}: 
+                        <span className={
+                          step.status === 'success' ? 'text-green-600' : 
+                          step.status === 'error' ? 'text-red-600' : 
+                          'text-yellow-600'
+                        }>
+                          {" "}{step.status}
+                        </span>
+                        {i < rowData.steps.length - 1 ? ', ' : ''}
+                      </span>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          
+          {isPolling && status === 'running' && (
+            <div className="mt-4 text-sm text-gray-600">
+              <p className="flex items-center">
+                <svg className="animate-pulse h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                Auto-refreshing status...
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -324,11 +501,14 @@ const EnrichmentStatusPage = () => {
               </table>
             </div>
             
-            {/* Start Enrichment Button */}
-            {lastFilledInfo && (
+            {/* Render Orchestration Status */}
+            {renderOrchestrationStatus()}
+            
+            {/* Start Orchestration Button */}
+            {lastFilledInfo && !isPolling && (
               <div className="mt-8 flex justify-end">
                 <button
-                  onClick={handleStartEnrichment}
+                  onClick={handleStartOrchestration}
                   disabled={isStartingEnrichment}
                   className={`flex items-center px-6 py-3 ${
                     isStartingEnrichment 
@@ -342,12 +522,12 @@ const EnrichmentStatusPage = () => {
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
-                      Starting Enrichment...
+                      Starting Orchestration...
                     </>
                   ) : (
                     <>
                       <Play className="h-5 w-5 mr-2" />
-                      Start Enrichment Process
+                      Start Orchestration Process
                     </>
                   )}
                 </button>
