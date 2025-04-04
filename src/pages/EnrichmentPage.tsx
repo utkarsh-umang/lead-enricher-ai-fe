@@ -61,6 +61,12 @@ const EnrichmentStatusPage = () => {
     };
   }, [orchestrationJobId, isPolling]);
 
+  useEffect(() => {
+    if (sheetDetails.spreadsheetId) {
+      handleGetCurrentStatus();
+    }
+  }, [sheetDetails.spreadsheetId]);
+
   const handleGetCurrentStatus = async () => {
     if (!sheetDetails.spreadsheetId) return;
     
@@ -224,6 +230,10 @@ const EnrichmentStatusPage = () => {
     }
   };
 
+  const isActuallySuccessful = (step: any) => {
+    return step.status === 'success' || (step.error && step.error.includes('Successfully updated'));
+  };
+
   const getCellBackgroundColor = (column: any, index: any) => {
     if (!column.filledRows) return 'bg-gray-50';
     
@@ -330,19 +340,23 @@ const EnrichmentStatusPage = () => {
                 {Object.entries(orchestrationStatus.progress).map(([row, rowData]: [any, any]) => (
                   <div key={row} className="mb-2 last:mb-0 border-b pb-2 last:border-b-0">
                     <span className="font-semibold">Row {row}:</span> 
-                    {rowData.steps?.map((step: any, i: any) => (
+                  {rowData.steps?.map((step: any, i: any) => {
+                    const actualSuccess = isActuallySuccessful(step);
+                    return (
                       <span key={i} className="ml-2">
                         {step.step}: 
                         <span className={
-                          step.status === 'success' ? 'text-green-600' : 
+                          actualSuccess ? 'text-green-600' : 
                           step.status === 'error' ? 'text-red-600' : 
                           'text-yellow-600'
                         }>
-                          {" "}{step.status}
+                          {" "}{actualSuccess ? 'success' : step.status}
+                          {actualSuccess && step.status === 'error' && ' *'}
                         </span>
                         {i < rowData.steps.length - 1 ? ', ' : ''}
                       </span>
-                    ))}
+                    );
+                  })}
                   </div>
                 ))}
               </div>
@@ -434,12 +448,12 @@ const EnrichmentStatusPage = () => {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    Loading Status...
+                    Loading Status... → Refreshing Status...
                   </>
                 ) : (
                   <>
                     <RefreshCw className="h-5 w-5 mr-2" />
-                    Get Current Status
+                    Refresh Status
                   </>
                 )}
               </button>
@@ -505,7 +519,7 @@ const EnrichmentStatusPage = () => {
             {renderOrchestrationStatus()}
             
             {/* Start Orchestration Button */}
-            {lastFilledInfo && !isPolling && (
+            {lastFilledInfo && !isPolling && orchestrationStatus?.status !== 'running' && !isLoading && (
               <div className="mt-8 flex justify-end">
                 <button
                   onClick={handleStartOrchestration}
@@ -522,12 +536,12 @@ const EnrichmentStatusPage = () => {
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
-                      Starting Orchestration...
+                      Starting workflow...
                     </>
                   ) : (
                     <>
                       <Play className="h-5 w-5 mr-2" />
-                      Start Orchestration Process
+                      Start Workflow
                     </>
                   )}
                 </button>
