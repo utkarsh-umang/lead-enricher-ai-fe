@@ -50,9 +50,18 @@ const EnrichmentStatusPage = () => {
     let pollingInterval: any;
     
     if (orchestrationJobId && isPolling) {
-      pollingInterval = setInterval(() => {
+      const initialPollTimeout = setTimeout(() => {
         pollJobStatus(orchestrationJobId);
-      }, 30000); // Poll every 30 seconds
+        pollingInterval = setInterval(() => {
+          pollJobStatus(orchestrationJobId);
+        }, 30000);
+      }, 5000);
+      return () => {
+        clearTimeout(initialPollTimeout);
+        if (pollingInterval) {
+          clearInterval(pollingInterval);
+        }
+      };
     }
     
     return () => {
@@ -178,7 +187,10 @@ const EnrichmentStatusPage = () => {
           status: 'running',
           message: 'Orchestration process started. Processing rows...'
         });
-        setIsPolling(true);
+        await handleGetCurrentStatus();
+        setTimeout(() => {
+          setIsPolling(true);
+        }, 2000); 
         // Show success message
         alert('Orchestration process started successfully! You can monitor progress on this page.');
       } else {
@@ -195,7 +207,7 @@ const EnrichmentStatusPage = () => {
     } finally {
       setIsStartingEnrichment(false);
     }
-  };
+  };  
 
   // Function to poll for job status
   const pollJobStatus = async (jobId: any) => {
@@ -219,7 +231,9 @@ const EnrichmentStatusPage = () => {
       if (data.status === 'completed' || data.status === 'error') {
         setIsPolling(false);
         // Refresh the column status to show the latest data
-        handleGetCurrentStatus();
+        await handleGetCurrentStatus();
+      } else if (data.status === 'running') {
+        await handleGetCurrentStatus();
       }
     } catch (error: any) {
       console.error('Error polling job status:', error);
