@@ -211,6 +211,19 @@ const EnrichmentStatusPage = () => {
         throw new Error(`API returned status ${response.status}`);
       }
       const data = await response.json();
+      console.log(data);
+      // Handle the specific "Job not found" error case
+      if (data.detail && data.detail.includes('Job') && data.detail.includes('not found')) {
+        setIsPolling(false);
+        setOrchestrationStatus({
+          status: 'error',
+          message: 'Process Abruptly Stopped',
+          error: 'The enrichment job is no longer available. It may have been terminated or expired.',
+          lastUpdated: new Date().toLocaleTimeString()
+        });
+        alert('Process Abruptly Stopped. The enrichment job is no longer available.');
+        return;
+      }
       // Update status in state
       setOrchestrationStatus({
         ...data,
