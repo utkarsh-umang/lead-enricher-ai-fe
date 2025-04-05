@@ -17,19 +17,7 @@ const ProtectedRoute = ({ children }) => {
   return (
     <>
       <Navbar />
-      <main className="pt-4">
-        {children}
-      </main>
-    </>
-  );
-};
-
-// Login layout component
-const LoginLayout = ({ children }) => {
-  return (
-    <>
-      <WavyBackground />
-      <main>
+      <main className="pt-4 bg-gray-50">
         {children}
       </main>
     </>
@@ -38,15 +26,18 @@ const LoginLayout = ({ children }) => {
 
 const App = () => {
   return (
-    <div className="relative min-h-screen bg-gray-50">
+    <div className="relative min-h-screen">
       <BrowserRouter>
         <Routes>
           <Route 
             path="/login" 
             element={
-              <LoginLayout>
-                <LoginPage />
-              </LoginLayout>
+              <>
+                <WavyBackground />
+                <main>
+                  <LoginPage />
+                </main>
+              </>
             } 
           />
           <Route 
