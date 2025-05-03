@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import ConnectPage from './pages/ConnectPage';
+import ConnectedSheetsPage from './pages/ConnectedSheetsPage';
 import SheetDetailsPage from './pages/SheetDetailsPage';
 import EnrichmentStatusPage from './pages/EnrichmentPage';
 import AuthPage from './pages/AuthPage';
@@ -42,6 +43,14 @@ const App = () => {
           />
           <Route 
             path="/" 
+            element={
+              <ProtectedRoute>
+                <ConnectedSheetsPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/connect" 
             element={
               <ProtectedRoute>
                 <ConnectPage />

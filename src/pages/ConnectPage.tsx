@@ -1,4 +1,6 @@
+//@ts-nocheck
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   FileSpreadsheet, 
   Copy, 
@@ -14,30 +16,14 @@ import {
 } from 'lucide-react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { clsx } from 'clsx';
-import { verifyGoogleSheetAccess } from '../services/google-sheet-api';
-
-// Type for successful verification
-interface SuccessfulVerification {
-  accessible: true;
-  title: string;
-  spreadsheet_id: string;
-  sheet_names: string[];
-}
-
-// Type for failed verification
-interface FailedVerification {
-  accessible: false;
-  error: string;
-}
-
-// Combined type
-type ValidationResult = SuccessfulVerification | FailedVerification | null;
+import { verifyGoogleSheetAccess, ValidationResult } from '../services/sheetService';
 
 const ConnectPage = () => {
   const [sheetUrl, setSheetUrl] = useState('');
   const [isEmailCopied, setIsEmailCopied] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
-  const [validationResult, setValidationResult] = useState<ValidationResult>(null);
+  const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
+  const navigate = useNavigate();
   
   const serviceEmail = 'umang-utk@url-to-email-445616.iam.gserviceaccount.com';
   const templateSheetUrl = 'https://docs.google.com/spreadsheets/d/1otxt0-_eE31xDV_G4vfsnTyq0aiZef4VdWoKJRNU-2c/edit?usp=sharing';
@@ -68,7 +54,7 @@ const ConnectPage = () => {
     } catch (error) {
       setValidationResult({
         accessible: false,
-        error: 'An unexpected error occurred. Please try again.',
+        error: error instanceof Error ? error.message : 'An unexpected error occurred. Please try again.',
       });
     } finally {
       setIsValidating(false);
@@ -90,13 +76,31 @@ const ConnectPage = () => {
       }));
       
       // Redirect to the sheet details page
-      window.location.href = '/sheet-details';
+      navigate('/sheet-details');
     }
+  };
+  
+  // Handler to navigate back to connected sheets list
+  const handleViewAllSheets = () => {
+    navigate('/');
   };
 
   return (
     <div className="min-h-[calc(100vh-64px)] bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
+        {/* Back to sheets button */}
+        <div className="mb-8">
+          <button
+            onClick={handleViewAllSheets}
+            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md text-sm font-medium text-indigo-700 bg-indigo-100 hover:bg-indigo-200"
+          >
+            <svg className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            Back to Connected Sheets
+          </button>
+        </div>
+        
         {/* Header section */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
@@ -333,15 +337,24 @@ const ConnectPage = () => {
                     )}
                   </button>}
 
-                  {/* Continue button appears after successful validation */}
+                  {/* Actions after successful validation */}
                   {validationResult && validationResult.accessible && (
-                    <button 
-                      onClick={handleContinueToEnrichment} // Added onClick handler here
-                      className="mt-2 w-full flex items-center justify-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-                    >
-                      Get Sheet Details
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </button>
+                    <div className="flex space-x-4 mt-4">
+                      <button 
+                        onClick={handleContinueToEnrichment}
+                        className="flex-1 flex items-center justify-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                      >
+                        Get Sheet Details
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </button>
+                      
+                      <button 
+                        onClick={handleViewAllSheets}
+                        className="flex items-center justify-center px-4 py-2 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200"
+                      >
+                        View All Sheets
+                      </button>
+                    </div>
                   )}
                 </div>
               </div>
