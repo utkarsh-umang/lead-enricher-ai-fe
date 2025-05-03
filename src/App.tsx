@@ -2,12 +2,12 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import ConnectPage from './pages/ConnectPage';
 import SheetDetailsPage from './pages/SheetDetailsPage';
 import EnrichmentStatusPage from './pages/EnrichmentPage';
-import LoginPage from './pages/LoginPage';
+import AuthPage from './pages/AuthPage';
 import WavyBackground from './components/Background';
 import Navbar from './components/Navbar';
 
 // Protected route component
-const ProtectedRoute = ({ children }) => {
+const ProtectedRoute = ({ children }: any) => {
   const isAuthenticated = !!localStorage.getItem('userToken');
   
   if (!isAuthenticated) {
@@ -35,7 +35,7 @@ const App = () => {
               <>
                 <WavyBackground />
                 <main>
-                  <LoginPage />
+                  <AuthPage />
                 </main>
               </>
             } 

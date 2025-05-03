@@ -497,7 +497,7 @@ const EnrichmentStatusPage = () => {
                         {index < 7 && <span className="ml-2 px-2 py-0.5 text-xs bg-blue-100 text-blue-800 rounded-full">Source</span>}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {column.filledRows !== null ? column.filledRows : '-'}
+                        {column.filledRows !== null ? column.filledRows-1 : '-'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
                         {column.status === 'complete' && (
