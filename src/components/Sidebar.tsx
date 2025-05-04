@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { FileSpreadsheet, LayoutGrid, ChevronLeft, Menu } from 'lucide-react';
+import { FileSpreadsheet, LayoutGrid, ChevronLeft, Menu, Brain } from 'lucide-react';
 import { clsx } from 'clsx';
 
 type NavItem = {
@@ -100,9 +100,12 @@ const Sidebar = () => {
         {/* Sidebar header */}
         <div className="flex items-center justify-between h-16 px-4 border-b">
           {!collapsed && (
-            <h2 className="text-xl font-semibold text-gray-900">
-              Lead Enricher
-            </h2>
+            <div className='flex'>
+              <Brain className="h-8 w-8 mr-2 text-indigo-600" />
+              <h2 className="text-xl font-semibold text-gray-900">
+                Lead Enricher
+              </h2>
+            </div>
           )}
           
           <button 
