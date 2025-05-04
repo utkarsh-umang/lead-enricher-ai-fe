@@ -43,6 +43,18 @@ export interface FailedVerification {
 
 export type ValidationResult = SuccessfulVerification | FailedVerification;
 
+export interface VerificationResult {
+  valid: boolean;
+  agency_id?: string;
+  spreadsheet_url?: string;
+  message?: string;
+  missing_columns?: string[];
+  misplaced_columns?: Array<{expected: string, found: string, position: number}>;
+  required_columns?: string[];
+  found_headers?: string[];
+  error?: string;
+}
+
 /**
  * Get all sheets for the current agency
  * @returns Promise with sheets data
@@ -147,6 +159,60 @@ export const verifyGoogleSheetAccess = async (sheetUrl: string): Promise<Validat
     return {
       accessible: false,
       error: data.error || 'Unknown error occurred'
+    };
+  }
+};
+
+/**
+ * Verify if the Google Sheet has the required columns in the correct order
+ * @param sheetUrl - The URL of the Google Sheet
+ * @param sheetName - The name of the sheet to verify (default: 'Sheet1')
+ * @returns Promise with verification result
+ */
+export const verifySheetColumns = async (
+  sheetUrl: string, 
+  sheetName: string = 'Sheet1'
+): Promise<VerificationResult> => {
+  const agencyId = localStorage.getItem('userAgencyId');
+  
+  if (!agencyId) {
+    throw new Error('Agency ID not found. Please log in again.');
+  }
+  
+  try {
+    const response = await fetch(`${API_BASE_URL}/google-sheet/verify-columns`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({
+        spreadsheet_url: sheetUrl,
+        sheet_name: sheetName,
+        agency_id: agencyId
+      })
+    });
+    
+    if (!response.ok) {
+      throw new Error(`API responded with status ${response.status}: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    
+    // Set user-friendly message if not provided by API
+    if (data.valid && !data.message) {
+      data.message = 'All required columns are present in the correct order';
+    } else if (!data.valid && !data.message) {
+      data.message = data.error || 'Some required columns are missing or in the wrong order';
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('Error verifying columns:', error);
+    return {
+      valid: false,
+      message: `Failed to verify columns: ${error.message}`,
+      error: error.message
     };
   }
 };

@@ -103,7 +103,7 @@ const Sidebar = () => {
             <div className='flex'>
               <Brain className="h-8 w-8 mr-2 text-indigo-600" />
               <h2 className="text-xl font-semibold text-gray-900">
-                Lead Enricher
+                EnLead AI
               </h2>
             </div>
           )}

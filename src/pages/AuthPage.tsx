@@ -145,7 +145,7 @@ const AuthPage = () => {
         <div className="bg-indigo-600 p-3 rounded-full">
           <Brain className="h-10 w-10 text-white" />
         </div>
-        <h1 className="mt-4 text-2xl font-bold text-gray-900">Lead Enrichment AI</h1>
+        <h1 className="mt-4 text-2xl font-bold text-gray-900">EnLead AI</h1>
       </div>
       
       <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-md">

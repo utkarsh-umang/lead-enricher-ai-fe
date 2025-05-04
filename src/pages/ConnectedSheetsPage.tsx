@@ -92,16 +92,20 @@ const ConnectedSheetsPage = () => {
     fetchConnectedSheets();
   };
   
-  const handleViewSheetDetails = (sheetId: string, sheetUrl: string, sheetName: string) => {
-    // Store sheet details in localStorage
-    localStorage.setItem('sheetDetails', JSON.stringify({
-      spreadsheetId: sheetId,
-      sheetUrl: sheetUrl,
-      sheetName: sheetName
-    }));
-    
-    // Navigate to sheet details page
-    navigate('/sheet-details');
+  const handleViewSheetDetails = (sheet: SheetStatus) => {
+    // Navigate to sheet details page with state containing the sheet data
+    navigate('/sheet-details', { 
+      state: { 
+        sheetData: {
+          spreadsheetId: sheet.sheet_id,
+          title: sheet.sheet_name,
+          sheetUrl: sheet.sheet_url,
+          status: sheet.status,
+          createdAt: sheet.created_at,
+          updatedAt: sheet.updated_at
+        } 
+      } 
+    });
   };
 
   return (
@@ -172,7 +176,6 @@ const ConnectedSheetsPage = () => {
                         <FileSpreadsheet className="h-6 w-6 text-indigo-600" />
                       </div>
                       <div className="ml-3">
-                        {/* Display the sheet_name instead of domain */}
                         <h3 className="text-lg font-medium text-gray-900 truncate max-w-[180px]" title={sheet.sheet_name}>
                           {sheet.sheet_name || 'Untitled Sheet'}
                         </h3>
@@ -208,7 +211,7 @@ const ConnectedSheetsPage = () => {
                       Open Sheet
                     </a>
                     <button
-                      onClick={() => handleViewSheetDetails(sheet.sheet_id, sheet.sheet_url, sheet.sheet_name)}
+                      onClick={() => handleViewSheetDetails(sheet)}
                       className="inline-flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-500"
                     >
                       View Details

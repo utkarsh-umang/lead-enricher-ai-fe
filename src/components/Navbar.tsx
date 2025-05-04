@@ -46,10 +46,10 @@ const Navbar = () => {
       <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 lg:ml-64 transition-all duration-300">
         <div className="flex items-center justify-between h-16">
           {/* Logo and title - centered on mobile, left-aligned on desktop with sidebar space */}
-          <div className="lg:hidden flex items-center">
+          <div className="lg:hidden flex items-center ml-10">
             <Brain className="h-8 w-8 text-indigo-600" />
             <span className="ml-2 text-xl font-semibold text-gray-900">
-              Lead Enrichment AI
+              EnLead AI
             </span>
           </div>
           
