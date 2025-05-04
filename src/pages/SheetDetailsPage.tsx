@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { FileSpreadsheet, Play, CheckCircle2, AlertCircle, ArrowLeft, ExternalLink } from 'lucide-react';
-import { verifySheetColumns, updateSheetStatus, VerificationResult } from '../services/sheetService';
+import { FileSpreadsheet, Play, CheckCircle2, AlertCircle, ArrowLeft, ExternalLink, Check } from 'lucide-react';
+import { verifySheetColumns, updateSheetStatus, VerificationResult, selectEnrichmentColumns } from '../services/sheetService';
 
 interface SheetData {
   spreadsheetId: string;
@@ -27,6 +27,10 @@ const SheetDetailsPage = () => {
   });
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationResult, setVerificationResult] = useState<VerificationResult | null>(null);
+  const [showColumnSelection, setShowColumnSelection] = useState(false);
+  const [selectedColumns, setSelectedColumns] = useState<string[]>([]);
+  const [isSubmittingColumns, setIsSubmittingColumns] = useState(false);
+  const [columnSubmitError, setColumnSubmitError] = useState<string | null>(null);
 
   useEffect(() => {
     // Get agency ID from localStorage
@@ -66,6 +70,7 @@ const SheetDetailsPage = () => {
     
     setIsVerifying(true);
     setVerificationResult(null);
+    setShowColumnSelection(false);
     
     try {
       // Use the service function to verify columns
@@ -87,26 +92,94 @@ const SheetDetailsPage = () => {
     }
   };
 
-  const handleContinueToEnrichment = async () => {
+  const handleShowColumnSelection = () => {
+    setSelectedColumns([]);
+    // Columns that should NOT be available for enrichment selection
+    const columnsToExclude = [
+      "Name",
+      "Last Name",
+      "Website Link",
+      "LinkedIn",
+      "Email",
+      "Podcast Name",
+      "Episode Link"
+    ];
+    
+    // Determine which columns to use for selection
+    // This logic is consistent with renderColumnSelectionUI
+    let availableColumns: any[] = [];
+    
+    if (verificationResult?.required_columns && verificationResult.required_columns.length > 0) {
+      availableColumns = verificationResult.required_columns;
+    } else if (verificationResult?.found_headers && verificationResult.found_headers.length > 0) {
+      availableColumns = verificationResult.found_headers.filter(header => header && header.trim() !== "");
+    }
+    
+    // Filter out columns that aren't available for enrichment
+    availableColumns = availableColumns.filter(column => !columnsToExclude.includes(column));
+    
+    if (availableColumns.length === 0) {
+      console.warn("No columns available for selection after filtering");
+    }
+    
+    setShowColumnSelection(true);
+  };
+
+  const handleColumnToggle = (column: string) => {
+    setSelectedColumns(prev => {
+      if (prev.includes(column)) {
+        return prev.filter(col => col !== column);
+      } else {
+        return [...prev, column];
+      }
+    });
+  };
+
+  const handleSubmitEnrichmentColumns = async () => {
+    if (selectedColumns.length === 0) {
+      setColumnSubmitError("Please select at least one column for enrichment");
+      return;
+    }
+
+    setIsSubmittingColumns(true);
+    setColumnSubmitError(null);
+
     try {
-      // Use the service function to update sheet status
-      await updateSheetStatus(sheetDetails.sheetUrl, "ENRICHMENT_STARTED");
-      
+      // Call the API to save selected enrichment columns
+      const enrichmentResult = await selectEnrichmentColumns(
+        sheetDetails.spreadsheetId,
+        selectedColumns
+      );
+      if (enrichmentResult) {
+        console.info("Columns Succesfully Selected!");
+      }
+      // Update sheet status - pass the sheet name as well
+      const statusResult = await updateSheetStatus(
+        sheetDetails.sheetUrl, 
+        "ENRICHMENT_STARTED",
+        sheetDetails.selectedSheet
+      );
+      if (statusResult) {
+        console.info("Status Updated!");
+      }
       // Save enrichment-ready sheet details to localStorage for the next page
-      localStorage.setItem('enrichmentReadySheet', JSON.stringify({
+      const enrichmentData = {
         spreadsheetId: sheetDetails.spreadsheetId,
         sheetTitle: sheetDetails.title,
         sheetUrl: sheetDetails.sheetUrl,
         sheetName: sheetDetails.selectedSheet,
         agencyId: sheetDetails.agencyId,
-        verificationData: verificationResult
-      }));
-      
+        verificationData: verificationResult,
+        enrichmentColumns: selectedColumns
+      };
+      localStorage.setItem('enrichmentReadySheet', JSON.stringify(enrichmentData));
       // Redirect to enrichment status page
       navigate('/enrichment-status');
-    } catch (error) {
-      console.error('Failed to update sheet status:', error);
-      // Show an error message but don't navigate
+    } catch (error: any) {
+      console.error('Failed to submit enrichment columns:', error);
+      setColumnSubmitError(error.message || "Failed to save enrichment columns");
+    } finally {
+      setIsSubmittingColumns(false);
     }
   };
 
@@ -171,6 +244,115 @@ const SheetDetailsPage = () => {
       <div className={`flex items-center space-x-2 px-3 py-1 rounded-full ${statusConfig.bg}`}>
         {statusConfig.icon}
         <span className={`font-medium ${statusConfig.text}`}>{status.replace(/_/g, ' ')}</span>
+      </div>
+    );
+  };
+
+  // Render enrichment column selection UI
+  const renderColumnSelectionUI = () => {
+    // Columns that should NOT be available for enrichment selection
+    const columnsToExclude = [
+      "Name",
+      "Last Name",
+      "Website Link",
+      "LinkedIn",
+      "Email",
+      "Podcast Name",
+      "Episode Link"
+    ];
+    // Determine which columns to use for selection
+    // First check required_columns, then found_headers
+    let availableColumns: any[] = [];
+    if (verificationResult?.required_columns && verificationResult.required_columns.length > 0) {
+      // For invalid sheets, use required_columns as they represent the expected structure
+      availableColumns = verificationResult.required_columns;
+    } else if (verificationResult?.found_headers && verificationResult.found_headers.length > 0) {
+      // For valid sheets, the API returns found_headers but may not include required_columns
+      availableColumns = verificationResult.found_headers.filter(header => header && header.trim() !== "");
+    }
+    // Filter out the columns that are not available for enrichment
+    availableColumns = availableColumns.filter(column => !columnsToExclude.includes(column));
+    if (availableColumns.length === 0) {
+      return (
+        <div className="mt-4 p-4 bg-yellow-50 border border-yellow-100 rounded-lg">
+          <p className="text-yellow-700">No columns available for selection. This may be due to missing data in the verification response.</p>
+          <p className="text-yellow-700 mt-2">Please try verifying the columns again.</p>
+        </div>
+      );
+    }
+    // Use available columns to render selection options
+    return (
+      <div className="mt-6 p-6 bg-gray-50 border border-gray-200 rounded-lg">
+        <h3 className="text-lg font-medium text-gray-900 mb-4">Select Columns for Enrichment</h3>
+        <p className="text-gray-600 mb-6">
+          Choose which columns you want to enrich with AI-generated content. Select at least one column.
+        </p>
+        {columnSubmitError && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-100 rounded-md">
+            <p className="text-sm text-red-700">{columnSubmitError}</p>
+          </div>
+        )}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
+          {availableColumns.map((column) => (
+            <div 
+              key={column}
+              onClick={() => handleColumnToggle(column)}
+              className={`
+                flex items-center justify-between px-4 py-3 rounded-md cursor-pointer
+                ${selectedColumns.includes(column) 
+                  ? 'bg-indigo-50 border border-indigo-200' 
+                  : 'bg-white border border-gray-200 hover:bg-gray-50'}
+              `}
+            >
+              <span className="text-sm font-medium text-gray-800">{column}</span>
+              <div className={`
+                flex items-center justify-center w-6 h-6 rounded-full
+                ${selectedColumns.includes(column) 
+                  ? 'bg-indigo-600' 
+                  : 'bg-gray-200'}
+              `}>
+                {selectedColumns.includes(column) ? (
+                  <Check className="h-4 w-4 text-white" />
+                ) : null}
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="flex justify-between">
+          <button 
+            onClick={() => setShowColumnSelection(false)}
+            className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+          >
+            Cancel
+          </button>
+          <button 
+            onClick={handleSubmitEnrichmentColumns}
+            disabled={isSubmittingColumns || selectedColumns.length === 0}
+            className={`
+              flex items-center px-6 py-2 
+              ${selectedColumns.length === 0 
+                ? 'bg-indigo-300 cursor-not-allowed' 
+                : isSubmittingColumns 
+                  ? 'bg-indigo-400 cursor-wait' 
+                  : 'bg-indigo-600 hover:bg-indigo-700'} 
+              text-white rounded-md transition-colors
+            `}
+          >
+            {isSubmittingColumns ? (
+              <>
+                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Processing...
+              </>
+            ) : (
+              <>
+                Continue to Enrichment
+              </>
+            )}
+          </button>
+        </div>
       </div>
     );
   };
@@ -292,7 +474,7 @@ const SheetDetailsPage = () => {
           </div>
           
           {/* Verification Result Display */}
-          {verificationResult && (
+          {verificationResult && !showColumnSelection && (
             <div className={`mt-6 p-4 rounded-lg ${
               verificationResult.valid ? 'bg-green-50 border border-green-100' : 'bg-red-50 border border-red-100'
             }`}>
@@ -378,14 +560,14 @@ const SheetDetailsPage = () => {
                     </div>
                   )}
                   
-                  {/* Continue to Enrichment button (only if verification passed) */}
+                  {/* Select Columns for Enrichment button - new button */}
                   {verificationResult.valid && sheetDetails.status === "CONNECTED" && (
                     <div className="mt-6">
                       <button 
-                        className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
-                        onClick={handleContinueToEnrichment}
+                        className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
+                        onClick={handleShowColumnSelection}
                       >
-                        Continue to Enrichment
+                        Select Columns for Enrichment
                       </button>
                     </div>
                   )}
@@ -406,6 +588,8 @@ const SheetDetailsPage = () => {
               </div>
             </div>
           )}
+          {/* Column Selection UI */}
+          {showColumnSelection && renderColumnSelectionUI()}
         </div>
       </div>
     </div>

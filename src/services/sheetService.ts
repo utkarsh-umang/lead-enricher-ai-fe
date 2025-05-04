@@ -55,6 +55,14 @@ export interface VerificationResult {
   error?: string;
 }
 
+export interface EnrichmentColumnsResponse {
+  success: boolean;
+  spreadsheet_id: string;
+  enrichment_columns: string[];
+  message?: string;
+  error?: string;
+}
+
 /**
  * Get all sheets for the current agency
  * @returns Promise with sheets data
@@ -86,9 +94,14 @@ export const getConnectedSheets = async (): Promise<AgencySheetsResponse> => {
  * Update the status of a sheet
  * @param sheetUrl - The URL of the Google Sheet
  * @param status - The new status value
+ * @param sheetName - The name of the sheet (default: 'Sheet1')
  * @returns Promise with the result
  */
-export const updateSheetStatus = async (sheetUrl: string, status: string): Promise<any> => {
+export const updateSheetStatus = async (
+  sheetUrl: string, 
+  status: string,
+  sheetName: string = 'Sheet1'
+): Promise<any> => {
   const agencyId = localStorage.getItem('userAgencyId');
   
   if (!agencyId) {
@@ -104,7 +117,8 @@ export const updateSheetStatus = async (sheetUrl: string, status: string): Promi
     body: JSON.stringify({
       spreadsheet_url: sheetUrl,
       agency_id: agencyId,
-      status: status
+      status: status,
+      sheet_name: sheetName
     })
   });
   
@@ -115,6 +129,81 @@ export const updateSheetStatus = async (sheetUrl: string, status: string): Promi
   }
   
   return data;
+};
+
+/**
+ * Select which columns should be enriched
+ * @param spreadsheetId - The ID of the Google Sheet
+ * @param enrichmentColumns - Array of column names to be enriched
+ * @returns Promise with the result
+ */
+export const selectEnrichmentColumns = async (
+  spreadsheetId: string,
+  enrichmentColumns: string[]
+): Promise<EnrichmentColumnsResponse> => {
+  if (!spreadsheetId) {
+    throw new Error('Spreadsheet ID is required');
+  }
+  
+  if (!enrichmentColumns || enrichmentColumns.length === 0) {
+    throw new Error('At least one enrichment column must be selected');
+  }
+  
+  try {
+    const response = await fetch(`${API_BASE_URL}/google-sheet/select-enrichment-columns`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({
+        spreadsheet_id: spreadsheetId,
+        enrichment_columns: enrichmentColumns
+      })
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || `API responded with status ${response.status}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error selecting enrichment columns:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get details about the enrichment columns for a sheet
+ * @param spreadsheetId - The ID of the Google Sheet
+ * @returns Promise with sheet info including enrichment columns
+ */
+export const getSheetInfo = async (spreadsheetId: string): Promise<any> => {
+  if (!spreadsheetId) {
+    throw new Error('Spreadsheet ID is required');
+  }
+  
+  try {
+    const response = await fetch(`${API_BASE_URL}/google-sheet/get-sheet-info/${spreadsheetId}`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json'
+      }
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || `API responded with status ${response.status}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error getting sheet info:', error);
+    throw error;
+  }
 };
 
 /**
@@ -205,14 +294,32 @@ export const verifySheetColumns = async (
     } else if (!data.valid && !data.message) {
       data.message = data.error || 'Some required columns are missing or in the wrong order';
     }
+    // Make sure both arrays exist for easier handling in the UI
+    if (!data.required_columns) {
+      // For successful validation, API might not include required_columns
+      if (data.found_headers && data.found_headers.length > 0) {
+        // If valid and we have found_headers, use found_headers as required_columns too
+        data.required_columns = [...data.found_headers];
+        console.log("Created required_columns from found_headers");
+      } else {
+        // Initialize as empty array to prevent null references
+        data.required_columns = [];
+      }
+    }
+    if (!data.found_headers) {
+      // Initialize as empty array to prevent null references
+      data.found_headers = [];
+    }
     
     return data;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error verifying columns:', error);
     return {
       valid: false,
       message: `Failed to verify columns: ${error.message}`,
-      error: error.message
+      error: error.message,
+      required_columns: [],
+      found_headers: []
     };
   }
 };
