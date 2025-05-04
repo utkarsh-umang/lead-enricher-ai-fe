@@ -42,20 +42,21 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-white shadow-md">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <nav className="bg-white shadow-md fixed top-0 right-0 left-0 z-10">
+      <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 lg:ml-64 transition-all duration-300">
         <div className="flex items-center justify-between h-16">
-          <div 
-            className="flex items-center cursor-pointer" 
-            onClick={() => window.location.href = '/'}
-          >
+          {/* Logo and title - centered on mobile, left-aligned on desktop with sidebar space */}
+          <div className="lg:hidden flex items-center">
             <Brain className="h-8 w-8 text-indigo-600" />
             <span className="ml-2 text-xl font-semibold text-gray-900">
               Lead Enrichment AI
             </span>
           </div>
           
-          {/* User Avatar and Dropdown */}
+          {/* This div is for spacing in desktop view */}
+          <div className="hidden lg:block"></div>
+          
+          {/* User Avatar and Dropdown - always aligned to right */}
           <div className="relative" ref={dropdownRef}>
             <div 
               className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-medium cursor-pointer"

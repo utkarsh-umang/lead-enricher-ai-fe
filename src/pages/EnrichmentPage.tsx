@@ -393,197 +393,195 @@ const EnrichmentStatusPage = () => {
   };
 
   return (
-    <div className="min-h-[calc(100vh-64px)] bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-6xl mx-auto">
-        <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200">
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center">
-              <FileSpreadsheet className="h-8 w-8 text-indigo-600" />
-              <div className="ml-4">
-                <h1 className="text-2xl font-semibold text-gray-900">
-                  Enrichment Status
-                </h1>
-                <p className="text-gray-600">
-                  View and manage enrichment progress for your lead list
-                </p>
-              </div>
+    <div className="max-w-6xl mx-auto">
+      <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200">
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center">
+            <FileSpreadsheet className="h-8 w-8 text-indigo-600" />
+            <div className="ml-4">
+              <h1 className="text-2xl font-semibold text-gray-900">
+                Enrichment Status
+              </h1>
+              <p className="text-gray-600">
+                View and manage enrichment progress for your lead list
+              </p>
             </div>
-            <button 
-              onClick={() => {
-                // Simple navigation back to sheet details page
-                window.location.href = '/sheet-details';
-              }}
-              className="flex items-center px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+          </div>
+          <button 
+            onClick={() => {
+              // Simple navigation back to sheet details page
+              window.location.href = '/sheet-details';
+            }}
+            className="flex items-center px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Sheet Details
+          </button>
+        </div>
+
+        <div className="border-t border-gray-200 pt-6">
+          <dl className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+            <div>
+              <dt className="text-sm font-medium text-gray-500">Sheet Name</dt>
+              <dd className="mt-1 text-lg font-semibold text-gray-900">
+                {sheetDetails.sheetTitle}
+              </dd>
+            </div>
+            <div className="sm:col-span-2">
+              <dt className="text-sm font-medium text-gray-500">Sheet URL</dt>
+              <dd className="mt-1 text-sm text-gray-600 break-all">
+                {sheetDetails.sheetUrl}
+              </dd>
+            </div>
+          </dl>
+        </div>
+
+        <div className="mt-8 border-t border-gray-200 pt-6">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900">
+                Column Status
+              </h2>
+              <p className="text-gray-600 mt-1">
+                Check which columns have been enriched and how many rows are processed
+              </p>
+            </div>
+            <button
+              onClick={handleGetCurrentStatus}
+              disabled={isLoading}
+              className={`flex items-center px-6 py-3 ${
+                isLoading 
+                  ? "bg-indigo-400 cursor-not-allowed" 
+                  : "bg-indigo-600 hover:bg-indigo-700"
+              } text-white rounded-lg transition-colors`}
             >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Sheet Details
+              {isLoading ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Loading Status... → Refreshing Status...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="h-5 w-5 mr-2" />
+                  Refresh Status
+                </>
+              )}
             </button>
           </div>
-
-          <div className="border-t border-gray-200 pt-6">
-            <dl className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-              <div>
-                <dt className="text-sm font-medium text-gray-500">Sheet Name</dt>
-                <dd className="mt-1 text-lg font-semibold text-gray-900">
-                  {sheetDetails.sheetTitle}
-                </dd>
-              </div>
-              <div className="sm:col-span-2">
-                <dt className="text-sm font-medium text-gray-500">Sheet URL</dt>
-                <dd className="mt-1 text-sm text-gray-600 break-all">
-                  {sheetDetails.sheetUrl}
-                </dd>
-              </div>
-            </dl>
+          
+          {/* Columns Status Table */}
+          <div className="overflow-x-auto border border-gray-200 rounded-lg shadow-sm">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Column Name
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Filled Rows
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {columnsStatus.map((column: any, index: any) => (
+                  <tr key={index} className={getCellBackgroundColor(column, index)}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {column.column}
+                      {index < 7 && <span className="ml-2 px-2 py-0.5 text-xs bg-blue-100 text-blue-800 rounded-full">Source</span>}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {column.filledRows !== null ? column.filledRows-1 : '-'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      {column.status === 'complete' && (
+                        <span className="px-2 py-1 bg-green-100 text-green-800 rounded-md flex items-center w-fit">
+                          <CheckCircle2 className="h-4 w-4 mr-1" />
+                          Complete
+                        </span>
+                      )}
+                      {column.status === 'in-progress' && (
+                        <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-md flex items-center w-fit">
+                          <svg className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          In Progress
+                        </span>
+                      )}
+                      {column.status === 'pending' && (
+                        <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded-md flex items-center w-fit">
+                          <svg className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          Pending
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-
-          <div className="mt-8 border-t border-gray-200 pt-6">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-lg font-semibold text-gray-900">
-                  Column Status
-                </h2>
-                <p className="text-gray-600 mt-1">
-                  Check which columns have been enriched and how many rows are processed
-                </p>
-              </div>
+          
+          {/* Render Orchestration Status */}
+          {renderOrchestrationStatus()}
+          
+          {/* Start Orchestration Button */}
+          {lastFilledInfo && !isPolling && orchestrationStatus?.status !== 'running' && !isLoading && (
+            <div className="mt-8 flex justify-end">
               <button
-                onClick={handleGetCurrentStatus}
-                disabled={isLoading}
+                onClick={handleStartOrchestration}
+                disabled={isStartingEnrichment}
                 className={`flex items-center px-6 py-3 ${
-                  isLoading 
-                    ? "bg-indigo-400 cursor-not-allowed" 
-                    : "bg-indigo-600 hover:bg-indigo-700"
+                  isStartingEnrichment 
+                    ? "bg-green-400 cursor-not-allowed" 
+                    : "bg-green-600 hover:bg-green-700"
                 } text-white rounded-lg transition-colors`}
               >
-                {isLoading ? (
+                {isStartingEnrichment ? (
                   <>
                     <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    Loading Status... → Refreshing Status...
+                    Starting workflow...
                   </>
                 ) : (
                   <>
-                    <RefreshCw className="h-5 w-5 mr-2" />
-                    Refresh Status
+                    <Play className="h-5 w-5 mr-2" />
+                    Start Workflow
                   </>
                 )}
               </button>
             </div>
-            
-            {/* Columns Status Table */}
-            <div className="overflow-x-auto border border-gray-200 rounded-lg shadow-sm">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Column Name
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Filled Rows
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {columnsStatus.map((column: any, index: any) => (
-                    <tr key={index} className={getCellBackgroundColor(column, index)}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {column.column}
-                        {index < 7 && <span className="ml-2 px-2 py-0.5 text-xs bg-blue-100 text-blue-800 rounded-full">Source</span>}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {column.filledRows !== null ? column.filledRows-1 : '-'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        {column.status === 'complete' && (
-                          <span className="px-2 py-1 bg-green-100 text-green-800 rounded-md flex items-center w-fit">
-                            <CheckCircle2 className="h-4 w-4 mr-1" />
-                            Complete
-                          </span>
-                        )}
-                        {column.status === 'in-progress' && (
-                          <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-md flex items-center w-fit">
-                            <svg className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            In Progress
-                          </span>
-                        )}
-                        {column.status === 'pending' && (
-                          <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded-md flex items-center w-fit">
-                            <svg className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            Pending
-                          </span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            
-            {/* Render Orchestration Status */}
-            {renderOrchestrationStatus()}
-            
-            {/* Start Orchestration Button */}
-            {lastFilledInfo && !isPolling && orchestrationStatus?.status !== 'running' && !isLoading && (
-              <div className="mt-8 flex justify-end">
-                <button
-                  onClick={handleStartOrchestration}
-                  disabled={isStartingEnrichment}
-                  className={`flex items-center px-6 py-3 ${
-                    isStartingEnrichment 
-                      ? "bg-green-400 cursor-not-allowed" 
-                      : "bg-green-600 hover:bg-green-700"
-                  } text-white rounded-lg transition-colors`}
-                >
-                  {isStartingEnrichment ? (
-                    <>
-                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Starting workflow...
-                    </>
-                  ) : (
-                    <>
-                      <Play className="h-5 w-5 mr-2" />
-                      Start Workflow
-                    </>
-                  )}
-                </button>
-              </div>
-            )}
-            
-            {/* Explanation of the Table */}
-            <div className="mt-8 bg-gray-50 p-4 rounded-lg border border-gray-200">
-              <h3 className="text-sm font-medium text-gray-700 mb-2">Understanding Column Status:</h3>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li className="flex items-center">
-                  <div className="w-4 h-4 bg-blue-50 border border-blue-100 rounded mr-2"></div>
-                  <span><strong>Source columns:</strong> The first 7 columns containing your original lead data.</span>
-                </li>
-                <li className="flex items-center">
-                  <div className="w-4 h-4 bg-green-50 border border-green-100 rounded mr-2"></div>
-                  <span><strong>Complete columns:</strong> Enrichment data that has been fully processed.</span>
-                </li>
-                <li className="flex items-center">
-                  <div className="w-4 h-4 bg-yellow-50 border border-yellow-100 rounded mr-2"></div>
-                  <span><strong>In Progress columns:</strong> Enrichment is partially complete for these columns.</span>
-                </li>
-                <li className="flex items-center">
-                  <div className="w-4 h-4 bg-gray-50 border border-gray-200 rounded mr-2"></div>
-                  <span><strong>Pending columns:</strong> No enrichment has been started for these columns.</span>
-                </li>
-              </ul>
-            </div>
+          )}
+          
+          {/* Explanation of the Table */}
+          <div className="mt-8 bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <h3 className="text-sm font-medium text-gray-700 mb-2">Understanding Column Status:</h3>
+            <ul className="space-y-2 text-sm text-gray-600">
+              <li className="flex items-center">
+                <div className="w-4 h-4 bg-blue-50 border border-blue-100 rounded mr-2"></div>
+                <span><strong>Source columns:</strong> The first 7 columns containing your original lead data.</span>
+              </li>
+              <li className="flex items-center">
+                <div className="w-4 h-4 bg-green-50 border border-green-100 rounded mr-2"></div>
+                <span><strong>Complete columns:</strong> Enrichment data that has been fully processed.</span>
+              </li>
+              <li className="flex items-center">
+                <div className="w-4 h-4 bg-yellow-50 border border-yellow-100 rounded mr-2"></div>
+                <span><strong>In Progress columns:</strong> Enrichment is partially complete for these columns.</span>
+              </li>
+              <li className="flex items-center">
+                <div className="w-4 h-4 bg-gray-50 border border-gray-200 rounded mr-2"></div>
+                <span><strong>Pending columns:</strong> No enrichment has been started for these columns.</span>
+              </li>
+            </ul>
           </div>
         </div>
       </div>

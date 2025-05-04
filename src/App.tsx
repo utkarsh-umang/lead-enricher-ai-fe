@@ -3,9 +3,10 @@ import ConnectPage from './pages/ConnectPage';
 import ConnectedSheetsPage from './pages/ConnectedSheetsPage';
 import SheetDetailsPage from './pages/SheetDetailsPage';
 import EnrichmentStatusPage from './pages/EnrichmentPage';
+import CampaignsPage from './pages/CampaignsPage';
 import AuthPage from './pages/AuthPage';
 import WavyBackground from './components/Background';
-import Navbar from './components/Navbar';
+import DashboardLayout from './components/DashboardLayout';
 
 // Protected route component
 const ProtectedRoute = ({ children }: any) => {
@@ -16,12 +17,9 @@ const ProtectedRoute = ({ children }: any) => {
   }
   
   return (
-    <>
-      <Navbar />
-      <main className="pt-4 bg-gray-50">
-        {children}
-      </main>
-    </>
+    <DashboardLayout>
+      {children}
+    </DashboardLayout>
   );
 };
 
@@ -30,6 +28,7 @@ const App = () => {
     <div className="relative min-h-screen">
       <BrowserRouter>
         <Routes>
+          {/* Auth route */}
           <Route 
             path="/login" 
             element={
@@ -41,6 +40,8 @@ const App = () => {
               </>
             } 
           />
+          
+          {/* Dashboard routes - Sheets section */}
           <Route 
             path="/" 
             element={
@@ -73,6 +74,18 @@ const App = () => {
               </ProtectedRoute>
             } 
           />
+          
+          {/* Dashboard routes - Campaigns section */}
+          <Route 
+            path="/campaigns" 
+            element={
+              <ProtectedRoute>
+                <CampaignsPage />
+              </ProtectedRoute>
+            } 
+          />
+          
+          {/* Fallback route */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
