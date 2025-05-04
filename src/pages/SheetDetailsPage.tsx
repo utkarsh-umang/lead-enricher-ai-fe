@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { FileSpreadsheet, Play, CheckCircle2, AlertCircle, ArrowLeft, ExternalLink, Check } from 'lucide-react';
-import { verifySheetColumns, updateSheetStatus, VerificationResult, selectEnrichmentColumns } from '../services/sheetService';
+import { verifySheetColumns, updateSheetStatus, VerificationResult, selectEnrichmentColumns, getSheetInfo } from '../services/sheetService';
 
 interface SheetData {
   spreadsheetId: string;
@@ -11,6 +11,63 @@ interface SheetData {
   createdAt?: string;
   updatedAt?: string;
 }
+
+// Component to show enrichment columns
+const EnrichmentColumnsDisplay = ({ 
+  isLoading, 
+  error, 
+  columns, 
+  onViewStatus, //@ts-ignore
+  onModify 
+}: { 
+  isLoading: boolean, 
+  error: string | null, 
+  columns: string[], 
+  onViewStatus: () => void, 
+  onModify: () => void 
+}) => {
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-3">
+        <svg className="animate-spin h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+      </div>
+    );
+  }
+  if (error) {
+    return <p className="text-sm text-red-600">{error}</p>;
+  }
+  if (!columns || columns.length === 0) {
+    return <p className="text-sm text-blue-700">No columns have been selected for enrichment yet.</p>;
+  }
+  return (
+    <>
+      <div className="flex flex-wrap gap-2 mt-2">
+        {columns.map((column: string) => (
+          <span key={column} className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
+            {column}
+          </span>
+        ))}
+      </div>
+      <div className="mt-4 flex justify-center">
+        <button 
+          className="text-sm px-3 py-1 bg-white border border-blue-300 text-blue-700 rounded hover:bg-blue-50 transition-colors"
+          onClick={onViewStatus}
+        >
+          View Enrichment Status
+        </button>
+        {/* <button 
+          className="text-sm px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+          onClick={onModify}
+        >
+          Modify Selections
+        </button> */}
+      </div>
+    </>
+  );
+};
 
 const SheetDetailsPage = () => {
   const navigate = useNavigate();
@@ -31,6 +88,29 @@ const SheetDetailsPage = () => {
   const [selectedColumns, setSelectedColumns] = useState<string[]>([]);
   const [isSubmittingColumns, setIsSubmittingColumns] = useState(false);
   const [columnSubmitError, setColumnSubmitError] = useState<string | null>(null);
+  const [enrichmentInfo, setEnrichmentInfo] = useState<any>(null);
+  const [isLoadingEnrichmentInfo, setIsLoadingEnrichmentInfo] = useState(false);
+  const [enrichmentInfoError, setEnrichmentInfoError] = useState<string | null>(null);
+
+  // Fetch enrichment info if the sheet is already in ENRICHMENT_STARTED status
+  const fetchEnrichmentInfo = async (spreadsheetId: string, status: string) => {
+    if (!spreadsheetId) return;
+    setIsLoadingEnrichmentInfo(true);
+    setEnrichmentInfoError(null);
+    try {
+      const info = await getSheetInfo(spreadsheetId);
+      setEnrichmentInfo(info);
+      // If we have enrichment columns already and the sheet is in ENRICHMENT_STARTED status,
+      if (info?.success && info?.enrichment_columns && info.enrichment_columns.length > 0 && status === "ENRICHMENT_STARTED") {
+        setSelectedColumns(info.enrichment_columns);
+      }
+    } catch (error: any) {
+      console.error("Failed to fetch enrichment info:", error);
+      setEnrichmentInfoError(error.message || "Failed to load enrichment information");
+    } finally {
+      setIsLoadingEnrichmentInfo(false);
+    }
+  };
 
   useEffect(() => {
     // Get agency ID from localStorage
@@ -43,18 +123,21 @@ const SheetDetailsPage = () => {
     // Check if sheet data was passed via navigation state
     if (location.state?.sheetData) {
       const { sheetData } = location.state as { sheetData: SheetData };
-      
       // Set sheet details from navigation state
+      const sheetStatus = sheetData.status || 'CONNECTED';
       setSheetDetails({
         spreadsheetId: sheetData.spreadsheetId || '',
         title: sheetData.title || 'Lead List',
         sheetUrl: sheetData.sheetUrl || '',
         selectedSheet: 'Sheet1', // Default to Sheet1
         agencyId: agencyId,
-        status: sheetData.status || 'CONNECTED',
+        status: sheetStatus,
         createdAt: sheetData.createdAt || '',
         updatedAt: sheetData.updatedAt || ''
       });
+      if (sheetStatus === "ENRICHMENT_STARTED" && sheetData.spreadsheetId) {
+        fetchEnrichmentInfo(sheetData.spreadsheetId, sheetStatus);
+      }
     } else {
       // If no sheet data was provided, redirect back
       console.error('No sheet data provided');
@@ -67,18 +150,15 @@ const SheetDetailsPage = () => {
       console.error('Missing required data: spreadsheetId or sheetUrl');
       return;
     }
-    
     setIsVerifying(true);
     setVerificationResult(null);
     setShowColumnSelection(false);
-    
     try {
       // Use the service function to verify columns
       const result = await verifySheetColumns(
         sheetDetails.sheetUrl, 
         sheetDetails.selectedSheet
       );
-      
       setVerificationResult(result);
     } catch (error: any) {
       console.error('Error in handleVerifyColumns:', error);
@@ -93,7 +173,6 @@ const SheetDetailsPage = () => {
   };
 
   const handleShowColumnSelection = () => {
-    setSelectedColumns([]);
     // Columns that should NOT be available for enrichment selection
     const columnsToExclude = [
       "Name",
@@ -104,24 +183,21 @@ const SheetDetailsPage = () => {
       "Podcast Name",
       "Episode Link"
     ];
-    
     // Determine which columns to use for selection
-    // This logic is consistent with renderColumnSelectionUI
     let availableColumns: any[] = [];
-    
     if (verificationResult?.required_columns && verificationResult.required_columns.length > 0) {
       availableColumns = verificationResult.required_columns;
     } else if (verificationResult?.found_headers && verificationResult.found_headers.length > 0) {
       availableColumns = verificationResult.found_headers.filter(header => header && header.trim() !== "");
     }
-    
     // Filter out columns that aren't available for enrichment
     availableColumns = availableColumns.filter(column => !columnsToExclude.includes(column));
-    
-    if (availableColumns.length === 0) {
-      console.warn("No columns available for selection after filtering");
+    // If we're in ENRICHMENT_STARTED status and have existing selections, use those
+    if (sheetDetails.status === "ENRICHMENT_STARTED" && enrichmentInfo?.success && enrichmentInfo?.enrichment_columns && enrichmentInfo.enrichment_columns.length > 0) {
+    } else {
+      // Reset selected columns state for new selection
+      setSelectedColumns([]);
     }
-    
     setShowColumnSelection(true);
   };
 
@@ -437,7 +513,32 @@ const SheetDetailsPage = () => {
           </dl>
         </div>
 
-        <div className="mt-8 border-t border-gray-200 pt-6">
+        {/* Show enrichment columns immediately for ENRICHMENT_STARTED status */}
+        {sheetDetails.status === "ENRICHMENT_STARTED" && !showColumnSelection && !verificationResult && (
+          <div className="mt-6 border-t border-gray-200 pt-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              Selected Columns for Enrichment
+            </h2>
+            
+            <div className="p-4 bg-blue-50 border border-blue-100 rounded-md">
+              <h4 className="text-sm font-semibold text-blue-800 mb-2">
+                Currently Selected Columns
+              </h4>
+              
+              <EnrichmentColumnsDisplay 
+                isLoading={isLoadingEnrichmentInfo}
+                error={enrichmentInfoError}
+                columns={enrichmentInfo?.enrichment_columns || []}
+                onViewStatus={() => navigate('/enrichment-status')}
+                onModify={handleShowColumnSelection}
+              />
+            </div>
+          </div>
+        )}
+
+        {sheetDetails.status !== "ENRICHMENT_STARTED" && <div className={`mt-8 border-t border-gray-200 pt-6 ${
+          sheetDetails.status === "ENRICHMENT_STARTED" && !showColumnSelection && !verificationResult ? 'mt-2' : 'mt-8'
+        }`}>
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-lg font-semibold text-gray-900">
@@ -571,13 +672,30 @@ const SheetDetailsPage = () => {
                       </button>
                     </div>
                   )}
-                  
-                  {/* Show status-based message if already in process */}
-                  {verificationResult.valid && sheetDetails.status !== "CONNECTED" && (
+
+                  {/* Already selected columns - show for ENRICHMENT_STARTED status */}
+                  {verificationResult.valid && sheetDetails.status === "ENRICHMENT_STARTED" && (
+                    <div className="mt-6">
+                      <div className="p-4 bg-blue-50 border border-blue-100 rounded-md">
+                        <h4 className="text-sm font-semibold text-blue-800 mb-2">
+                          Selected Columns for Enrichment
+                        </h4>
+                        
+                        <EnrichmentColumnsDisplay 
+                          isLoading={isLoadingEnrichmentInfo}
+                          error={enrichmentInfoError}
+                          columns={enrichmentInfo?.enrichment_columns || []}
+                          onViewStatus={() => navigate('/enrichment-status')}
+                          onModify={handleShowColumnSelection}
+                        />
+                      </div>
+                    </div>
+                  )}
+                  {/* Show status-based message for other statuses */}
+                  {verificationResult.valid && sheetDetails.status !== "CONNECTED" && sheetDetails.status !== "ENRICHMENT_STARTED" && (
                     <div className="mt-6 p-3 bg-blue-50 border border-blue-100 rounded-md">
                       <p className="text-sm text-blue-700">
-                        This sheet is already in the {sheetDetails.status.replace(/_/g, ' ').toLowerCase()} stage. 
-                        {sheetDetails.status === "ENRICHMENT_STARTED" && " You can view the progress in the enrichment status page."}
+                        This sheet is in the {sheetDetails.status.replace(/_/g, ' ').toLowerCase()} stage. 
                         {sheetDetails.status === "ENRICHMENT_COMPLETED" && " You can now proceed to outreach."}
                         {sheetDetails.status === "OUTREACH_STARTED" && " Outreach is currently in progress."}
                         {sheetDetails.status === "COMPLETED" && " The process has been completed."}
@@ -590,7 +708,7 @@ const SheetDetailsPage = () => {
           )}
           {/* Column Selection UI */}
           {showColumnSelection && renderColumnSelectionUI()}
-        </div>
+        </div>}
       </div>
     </div>
   );
