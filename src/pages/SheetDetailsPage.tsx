@@ -181,7 +181,8 @@ const SheetDetailsPage = () => {
       "LinkedIn",
       "Email",
       "Podcast Name",
-      "Episode Link"
+      "Episode Link",
+      "Custom Outreach Message"
     ];
     // Determine which columns to use for selection
     let availableColumns: any[] = [];

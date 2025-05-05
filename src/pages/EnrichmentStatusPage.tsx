@@ -69,9 +69,8 @@ const EnrichmentStatusPage = () => {
 
   const handleGetCurrentStatus = async () => {
     if (!sheetDetails.spreadsheetId) return;
-    
     setIsLoading(true);
-    
+    const agencyId = localStorage.getItem('userAgencyId');
     try {
       const response = await fetch(`${API_BASE_URL}/google-sheet/get-last-filled-rows`, {
         method: 'POST',
@@ -81,8 +80,8 @@ const EnrichmentStatusPage = () => {
         },
         body: JSON.stringify({
           spreadsheet_url: sheetDetails.sheetUrl,
-          sheet_name: sheetDetails.sheetName,
-          use_version: "v2"
+          agency_id: agencyId,
+          sheet_name: sheetDetails.sheetName
         })
       });
       
