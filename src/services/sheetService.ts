@@ -323,3 +323,79 @@ export const verifySheetColumns = async (
     };
   }
 };
+
+export const getAllSheets = async (): Promise<Sheet[]> => {
+  try {
+    // Get the agency ID from localStorage
+    const agencyId = localStorage.getItem('userAgencyId');
+    if (!agencyId) {
+      throw new Error('Agency ID not found. Please log in again.');
+    }
+    
+    // Call the API to get sheet status
+    const response = await fetch(`${API_BASE_URL}/google-sheet/status/${agencyId}`, {
+      method: 'GET',
+      headers: {
+        'accept': 'application/json'
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`API returned status ${response.status}`);
+    }
+    
+    const data = await response.json();
+    
+    // Transform the API response to our Sheet interface
+    const sheets: Sheet[] = await Promise.all(data.sheets.map(async (sheet: any) => {
+      let enrichmentColumns: string[] = [];
+      let enrichmentProgress = 0;
+      
+      // For sheets with ENRICHMENT status, fetch additional enrichment info
+      if (sheet.status === 'ENRICHMENT_STARTED' || sheet.status === 'ENRICHMENT_COMPLETED') {
+        try {
+          const enrichmentInfo = await getSheetInfo(sheet.sheet_id);
+          if (enrichmentInfo.success) {
+            enrichmentColumns = enrichmentInfo.enrichment_columns || [];
+            
+            // Calculate progress based on enrichment_columns_info if available
+            if (enrichmentInfo.enrichment_columns_info) {
+              // Get the total number of processed rows across all columns
+              let totalProcessed = 0;
+              let totalToProcess = 0;
+              
+              Object.keys(enrichmentInfo.enrichment_columns_info).forEach(column => {
+                const lastUpdatedRow = enrichmentInfo.enrichment_columns_info[column].last_updated_row || 0;
+                totalProcessed += lastUpdatedRow;
+                totalToProcess += 100; // Placeholder - replace with actual total rows
+              });
+              
+              if (totalToProcess > 0) {
+                enrichmentProgress = Math.floor((totalProcessed / totalToProcess) * 100);
+              }
+            }
+          }
+        } catch (enrichmentError) {
+          console.error(`Error fetching enrichment info for sheet ${sheet.sheet_id}:`, enrichmentError);
+        }
+      }
+      
+      return {
+        spreadsheetId: sheet.sheet_id,
+        title: sheet.sheet_name,
+        sheetUrl: sheet.sheet_url,
+        sheetName: sheet.sheet_name,
+        status: sheet.status,
+        enrichmentColumns,
+        enrichmentProgress,
+        createdAt: sheet.created_at,
+        updatedAt: sheet.updated_at
+      };
+    }));
+    
+    return sheets;
+  } catch (error: any) {
+    console.error('Error fetching sheets:', error);
+    throw new Error(error.message || 'Failed to load sheets');
+  }
+};

@@ -1,395 +1,173 @@
 import { useState, useEffect } from 'react';
-import { FileSpreadsheet, Play, CheckCircle2, ArrowLeft, RefreshCw } from 'lucide-react';
-import { API_BASE_URL } from "../config/env";
+import { useNavigate } from 'react-router-dom';
+import { 
+  LineChart, 
+  ArrowRight, 
+  Play, 
+  CheckCircle2,
+  AlertCircle, 
+  ExternalLink,
+  RefreshCw,
+  Search
+} from 'lucide-react';
+import { getAllSheets } from '../services/sheetService';
 
-const EnrichmentStatusPage = () => {
-  const [sheetDetails, setSheetDetails] = useState({
-    spreadsheetId: '',
-    sheetTitle: 'Lead List',
-    sheetUrl: '',
-    sheetName: 'Sheet1',
-    verificationData: null
-  });
+const EnrichmentsLandingPage = () => {
+  const navigate = useNavigate();
+  const [sheets, setSheets] = useState<any[]>([]);
+  const [filteredSheets, setFilteredSheets] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const [columnsStatus, setColumnsStatus] = useState<any>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [lastFilledInfo, setLastFilledInfo] = useState<any>(null);
-  const [isStartingEnrichment, setIsStartingEnrichment] = useState(false);
-  const [orchestrationJobId, setOrchestrationJobId] = useState<any>(null);
-  const [orchestrationStatus, setOrchestrationStatus] = useState<any>(null);
-  const [isPolling, setIsPolling] = useState(false);
-
+  // Fetch all sheets when component mounts
   useEffect(() => {
-    // Retrieve sheet details from localStorage
-    const storedEnrichmentSheet = localStorage.getItem('enrichmentReadySheet');
-    
-    if (storedEnrichmentSheet) {
-      try {
-        const parsedDetails = JSON.parse(storedEnrichmentSheet);
-        setSheetDetails(parsedDetails);
-        
-        // If we have verification data with headers, initialize column status
-        if (parsedDetails.verificationData && parsedDetails.verificationData.found_headers) {
-          const initialColumnsStatus = parsedDetails.verificationData.found_headers.map((header: any) => ({
-            column: header,
-            filledRows: null,
-            status: 'pending' // 'pending', 'complete', 'in-progress'
-          }));
-          setColumnsStatus(initialColumnsStatus);
-        }
-      } catch (error) {
-        console.error('Error parsing stored enrichment sheet details:', error);
-      }
-    } else {
-      // Redirect to home page if no data is available
-      window.location.href = '/';
-    }
+    fetchSheets();
   }, []);
 
+  // Filter sheets when search term changes
   useEffect(() => {
-    let pollingInterval: any;
-    
-    if (orchestrationJobId && isPolling) {
-      pollingInterval = setInterval(() => {
-        pollJobStatus(orchestrationJobId);
-      }, 30000); // Poll every 30 seconds
+    if (sheets.length > 0) {
+      const filtered = sheets.filter(sheet => 
+        sheet.title.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredSheets(filtered);
     }
-    
-    return () => {
-      if (pollingInterval) {
-        clearInterval(pollingInterval);
-      }
-    };
-  }, [orchestrationJobId, isPolling]);
+  }, [searchTerm, sheets]);
 
-  useEffect(() => {
-    if (sheetDetails.spreadsheetId) {
-      handleGetCurrentStatus();
-    }
-  }, [sheetDetails.spreadsheetId]);
-
-  const handleGetCurrentStatus = async () => {
-    if (!sheetDetails.spreadsheetId) return;
-    
+  const fetchSheets = async () => {
     setIsLoading(true);
+    setError(null);
     
     try {
-      const response = await fetch(`${API_BASE_URL}/google-sheet/get-last-filled-rows`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'accept': 'application/json'
-        },
-        body: JSON.stringify({
-          spreadsheet_url: sheetDetails.sheetUrl,
-          sheet_name: sheetDetails.sheetName,
-          use_version: "v2"
-        })
-      });
+      const response = await getAllSheets();
       
-      if (!response.ok) {
-        throw new Error(`API returned status ${response.status}`);
-      }
+      // Filter out sheets with 'CONNECTED' or 'NO_ACCESS' status
+      const enrichmentSheets = response.filter(sheet => 
+        sheet.status !== 'CONNECTED' && sheet.status !== 'NO_ACCESS'
+      );
       
-      const data = await response.json();
-      console.log('API Response:', data);
-      
-      // Transform the API response to our column status format
-      const lastFilledRows = data.last_filled_rows;
-      const columnPositions = data.column_positions;
-      const totalRows = data.total_rows;
-      
-      // Get all column names in their correct order based on column_positions
-      const orderedColumns = Object.entries(columnPositions)
-        .sort((a: any, b: any) => a[1] - b[1])
-        .map(entry => entry[0]);
-      
-      const statusData = orderedColumns.map(columnName => {
-        const filledRows = lastFilledRows[columnName]?.last_row || 0;
-        let status = 'pending';
-        
-        if (filledRows > 0) {
-          status = filledRows === totalRows ? 'complete' : 'in-progress';
-        }
-        
-        return {
-          column: columnName,
-          filledRows: filledRows,
-          status: status
-        };
-      });
-      
-      setColumnsStatus(statusData);
-      
-      // Determine source columns (first 7 in this case based on your description)
-      // and find the max filled row among them
-      const sourceColumns = orderedColumns.slice(0, 7);
-      const sourceLastRow = Math.max(...sourceColumns.map(col => lastFilledRows[col]?.last_row || 0));
-      
-      // Set the last filled info
-      setLastFilledInfo({
-        lastFilledRow: sourceLastRow,
-        lastFilledColumns: orderedColumns
-          .filter(col => lastFilledRows[col]?.last_row === sourceLastRow)
-          .map(col => col)
-      });
-      
+      setSheets(enrichmentSheets);
+      setFilteredSheets(enrichmentSheets);
     } catch (error: any) {
-      console.error('Error getting enrichment status:', error);
-      alert(`Failed to get status: ${error.message}`);
+      console.error('Error fetching sheets:', error);
+      setError('Failed to load sheets. Please try again later.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // New function to call orchestrator API
-  const handleStartOrchestration = async () => {
-    if (!sheetDetails.sheetUrl) return;
-    
-    setIsStartingEnrichment(true);
-    
-    try {
-      // Prepare payload for the orchestration process
-      const payload = {
-        spreadsheet_url: sheetDetails.sheetUrl,
-        sheet_name: sheetDetails.sheetName,
-        batch_size: 10,
-        process_all: false
-      };
-      
-      // Call the orchestrator API
-      const response = await fetch(`${API_BASE_URL}/orchestrator/start`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'accept': 'application/json'
-        },
-        body: JSON.stringify(payload)
-      });
-      
-      if (!response.ok) {
-        throw new Error(`API returned status ${response.status}`);
-      }
-      
-      const data = await response.json();
-      if (data.job_id) {
-        setOrchestrationJobId(data.job_id);
-        setOrchestrationStatus({
-          status: 'running',
-          message: 'Orchestration process started. Processing rows...'
-        });
-        setIsPolling(true);
-        // Show success message
-        alert('Orchestration process started successfully! You can monitor progress on this page.');
-      } else {
-        throw new Error('No job ID returned from the API');
-      }
-      
-    } catch (error: any) {
-      console.error('Error starting orchestration:', error);
-      alert(`Failed to start orchestration process: ${error.message}`);
-      setOrchestrationStatus({
-        status: 'error',
-        message: `Failed to start: ${error.message}`
-      });
-    } finally {
-      setIsStartingEnrichment(false);
-    }
-  };  
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await fetchSheets();
+    setIsRefreshing(false);
+  };
 
-  // Function to poll for job status
-  const pollJobStatus = async (jobId: any) => {
-    if (!jobId) return;
-    try {
-      const response = await fetch(`${API_BASE_URL}/orchestrator/status/${jobId}`, {
-        method: 'GET',
-        headers: {
-          'accept': 'application/json'
-        }
-      });
-      if (!response.ok) {
-        throw new Error(`API returned status ${response.status}`);
-      }
-      const data = await response.json();
-      console.log(data);
-      // Handle the specific "Job not found" error case
-      if (data.detail && data.detail.includes('Job') && data.detail.includes('not found')) {
-        setIsPolling(false);
-        setOrchestrationStatus({
-          status: 'error',
-          message: 'Process Abruptly Stopped',
-          error: 'The enrichment job is no longer available. It may have been terminated or expired.',
-          lastUpdated: new Date().toLocaleTimeString()
-        });
-        alert('Process Abruptly Stopped. The enrichment job is no longer available.');
-        return;
-      }
-      // Update status in state
-      setOrchestrationStatus({
-        ...data,
-        lastUpdated: new Date().toLocaleTimeString()
-      });
-      if (data.status === 'completed' || data.status === 'error') {
-        setIsPolling(false);
-        // Refresh the column status to show the latest data
-        handleGetCurrentStatus();
-      }
-    } catch (error: any) {
-      console.error('Error polling job status:', error);
-      setOrchestrationStatus((prev: any) => ({
-        ...prev,
-        error: `Polling error: ${error.message}`,
-        lastUpdated: new Date().toLocaleTimeString()
-      }));
+  const handleViewEnrichmentStatus = (sheet: any) => {
+    // Store sheet details in localStorage for the enrichment status page
+    const enrichmentData = {
+      spreadsheetId: sheet.spreadsheetId,
+      sheetTitle: sheet.title,
+      sheetUrl: sheet.sheetUrl,
+      sheetName: sheet.sheetName || 'Sheet1',
+      verificationData: sheet.verificationData
+    };
+    
+    localStorage.setItem('enrichmentReadySheet', JSON.stringify(enrichmentData));
+    
+    // Navigate to the enrichment status page
+    navigate('/enrichment-status');
+  };
+
+  // Get status badge based on sheet status
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'ENRICHMENT_STARTED':
+        return (
+          <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-md flex items-center w-fit text-xs">
+            <svg className="h-3 w-3 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            In Progress
+          </span>
+        );
+      case 'ENRICHMENT_COMPLETED':
+        return (
+          <span className="px-2 py-1 bg-green-100 text-green-800 rounded-md flex items-center w-fit text-xs">
+            <CheckCircle2 className="h-3 w-3 mr-1" />
+            Completed
+          </span>
+        );
+      case 'OUTREACH_STARTED':
+        return (
+          <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded-md flex items-center w-fit text-xs">
+            <svg className="h-3 w-3 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+            </svg>
+            Outreach Active
+          </span>
+        );
+      case 'COMPLETED':
+        return (
+          <span className="px-2 py-1 bg-emerald-100 text-emerald-800 rounded-md flex items-center w-fit text-xs">
+            <CheckCircle2 className="h-3 w-3 mr-1" />
+            All Completed
+          </span>
+        );
+      default:
+        return (
+          <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded-md flex items-center w-fit text-xs">
+            <AlertCircle className="h-3 w-3 mr-1" />
+            {status.replace(/_/g, ' ')}
+          </span>
+        );
     }
   };
 
-  const isActuallySuccessful = (step: any) => {
-    return step.status === 'success' || (step.error && step.error.includes('Successfully updated'));
+  // Format date for display
+  const formatDate = (dateString: string) => {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric' 
+    });
   };
 
-  const getCellBackgroundColor = (column: any, index: any) => {
-    if (!column.filledRows) return 'bg-gray-50';
-    
-    // Check if this is a source column (first 7 columns based on API response)
-    const isSourceColumn = index < 7;
-    
-    if (isSourceColumn) return 'bg-blue-50';
-    
-    // Other columns are enrichment data
-    if (column.status === 'complete') return 'bg-green-50';
-    if (column.filledRows > 0) return 'bg-yellow-50';
-    return 'bg-gray-50';
-  };
-
-  // Helper function to render orchestration status
-  const renderOrchestrationStatus = () => {
-    if (!orchestrationStatus) return null;
-    
-    const { status, processed_rows, total_rows, row_errors, message, lastUpdated } = orchestrationStatus;
-    
-    let statusColor = 'bg-gray-100 text-gray-800';
-    let statusIcon = <RefreshCw className="h-5 w-5 mr-2" />;
-    
-    if (status === 'running') {
-      statusColor = 'bg-blue-100 text-blue-800';
-      statusIcon = (
-        <svg className="animate-spin h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
-      );
-    } else if (status === 'completed') {
-      statusColor = 'bg-green-100 text-green-800';
-      statusIcon = <CheckCircle2 className="h-5 w-5 mr-2" />;
-    } else if (status === 'error') {
-      statusColor = 'bg-red-100 text-red-800';
-      statusIcon = (
-        <svg className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      );
+  // Show selected columns formatted nicely
+  const renderSelectedColumns = (sheet: any) => {
+    if (!sheet.enrichmentColumns || sheet.enrichmentColumns.length === 0) {
+      return <span className="text-gray-400 text-xs italic">No columns selected</span>;
     }
     
-    return (
-      <div className="mt-8 border-t border-gray-200 pt-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">
-          Orchestration Status
-        </h2>
-        
-        <div className="bg-white p-4 border border-gray-200 rounded-lg shadow-sm">
-          <div className="flex items-center mb-4">
-            <span className={`px-3 py-1 ${statusColor} rounded-full flex items-center text-sm font-medium`}>
-              {statusIcon}
-              {status === 'running' ? 'Running' : 
-               status === 'completed' ? 'Completed' : 
-               status === 'error' ? 'Error' : 'Unknown'}
+    // If there are more than 3 columns, show first 3 + count
+    const columns = sheet.enrichmentColumns;
+    if (columns.length <= 3) {
+      return (
+        <div className="flex flex-wrap gap-1">
+          {columns.map((column: string, index: number) => (
+            <span key={index} className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded-full text-xs">
+              {column}
             </span>
-            
-            {lastUpdated && (
-              <span className="ml-4 text-sm text-gray-500">
-                Last updated: {lastUpdated}
-              </span>
-            )}
-          </div>
-          
-          {message && (
-            <p className="text-sm text-gray-700 mb-3">
-              {message}
-            </p>
-          )}
-          
-          {(processed_rows !== undefined && total_rows !== undefined) && (
-            <div className="mb-3">
-              <div className="flex justify-between text-sm text-gray-600 mb-1">
-                <span>Progress: {processed_rows} of {total_rows} rows</span>
-                <span>{Math.round((processed_rows / total_rows) * 100)}%</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2.5">
-                <div 
-                  className="bg-blue-600 h-2.5 rounded-full" 
-                  style={{ width: `${Math.round((processed_rows / total_rows) * 100)}%` }}
-                ></div>
-              </div>
-            </div>
-          )}
-          
-          {row_errors && Object.keys(row_errors).length > 0 && (
-            <div className="mt-4">
-              <h3 className="text-sm font-medium text-gray-700 mb-2">Errors:</h3>
-              <div className="max-h-40 overflow-y-auto bg-gray-50 p-3 rounded-md text-sm">
-                {Object.entries(row_errors).map(([row, error]: [any, any]) => (
-                  <div key={row} className="mb-2 last:mb-0">
-                    <span className="font-semibold">Row {row}:</span> {error}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-          
-          {orchestrationStatus.progress && (
-            <div className="mt-4">
-              <h3 className="text-sm font-medium text-gray-700 mb-2">Row Progress:</h3>
-              <div className="max-h-40 overflow-y-auto bg-gray-50 p-3 rounded-md text-sm">
-                {Object.entries(orchestrationStatus.progress).map(([row, rowData]: [any, any]) => (
-                  <div key={row} className="mb-2 last:mb-0 border-b pb-2 last:border-b-0">
-                    <span className="font-semibold">Row {row}:</span> 
-                  {rowData.steps?.map((step: any, i: any) => {
-                    const actualSuccess = isActuallySuccessful(step);
-                    return (
-                      <span key={i} className="ml-2">
-                        {step.step}: 
-                        <span className={
-                          actualSuccess ? 'text-green-600' : 
-                          step.status === 'error' ? 'text-red-600' : 
-                          'text-yellow-600'
-                        }>
-                          {" "}{actualSuccess ? 'success' : step.status}
-                          {actualSuccess && step.status === 'error' && ' *'}
-                        </span>
-                        {i < rowData.steps.length - 1 ? ', ' : ''}
-                      </span>
-                    );
-                  })}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-          
-          {isPolling && status === 'running' && (
-            <div className="mt-4 text-sm text-gray-600">
-              <p className="flex items-center">
-                <svg className="animate-pulse h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-                Auto-refreshing status...
-              </p>
-            </div>
-          )}
+          ))}
         </div>
-      </div>
-    );
+      );
+    } else {
+      return (
+        <div>
+          <div className="flex flex-wrap gap-1 mb-1">
+            {columns.slice(0, 3).map((column: string, index: number) => (
+              <span key={index} className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded-full text-xs">
+                {column}
+              </span>
+            ))}
+          </div>
+          <span className="text-xs text-gray-500">+{columns.length - 3} more</span>
+        </div>
+      );
+    }
   };
 
   return (
@@ -397,196 +175,214 @@ const EnrichmentStatusPage = () => {
       <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center">
-            <FileSpreadsheet className="h-8 w-8 text-indigo-600" />
+            <LineChart className="h-8 w-8 text-indigo-600" />
             <div className="ml-4">
               <h1 className="text-2xl font-semibold text-gray-900">
-                Enrichment Status
+                Enrichments
               </h1>
               <p className="text-gray-600">
-                View and manage enrichment progress for your lead list
+                Manage and track your lead enrichment processes
               </p>
             </div>
           </div>
           <button 
-            onClick={() => {
-              // Simple navigation back to sheet details page
-              window.location.href = '/sheet-details';
-            }}
-            className="flex items-center px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className={`flex items-center px-4 py-2 ${
+              isRefreshing 
+                ? "bg-indigo-400 cursor-not-allowed" 
+                : "bg-indigo-600 hover:bg-indigo-700"
+            } text-white rounded-lg transition-colors`}
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Sheet Details
+            {isRefreshing ? (
+              <>
+                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Refreshing...
+              </>
+            ) : (
+              <>
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Refresh
+              </>
+            )}
           </button>
         </div>
-
-        <div className="border-t border-gray-200 pt-6">
-          <dl className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-            <div>
-              <dt className="text-sm font-medium text-gray-500">Sheet Name</dt>
-              <dd className="mt-1 text-lg font-semibold text-gray-900">
-                {sheetDetails.sheetTitle}
-              </dd>
+        
+        {/* Search and filters */}
+        <div className="mb-6 relative">
+          <div className="relative">
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search sheet name..."
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            />
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search className="h-5 w-5 text-gray-400" />
             </div>
-            <div className="sm:col-span-2">
-              <dt className="text-sm font-medium text-gray-500">Sheet URL</dt>
-              <dd className="mt-1 text-sm text-gray-600 break-all">
-                {sheetDetails.sheetUrl}
-              </dd>
-            </div>
-          </dl>
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm('')}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+              >
+                ✕
+              </button>
+            )}
+          </div>
         </div>
-
-        <div className="mt-8 border-t border-gray-200 pt-6">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900">
-                Column Status
-              </h2>
-              <p className="text-gray-600 mt-1">
-                Check which columns have been enriched and how many rows are processed
-              </p>
+        
+        {/* Loading state */}
+        {isLoading && !isRefreshing && (
+          <div className="flex items-center justify-center py-10">
+            <svg className="animate-spin h-8 w-8 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          </div>
+        )}
+        
+        {/* Error state */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-md p-4 mb-6">
+            <div className="flex">
+              <AlertCircle className="h-5 w-5 text-red-400" />
+              <p className="ml-3 text-sm text-red-700">{error}</p>
             </div>
-            <button
-              onClick={handleGetCurrentStatus}
-              disabled={isLoading}
-              className={`flex items-center px-6 py-3 ${
-                isLoading 
-                  ? "bg-indigo-400 cursor-not-allowed" 
-                  : "bg-indigo-600 hover:bg-indigo-700"
-              } text-white rounded-lg transition-colors`}
+          </div>
+        )}
+        
+        {/* Empty state */}
+        {!isLoading && filteredSheets.length === 0 && !error && (
+          <div className="text-center py-10 bg-gray-50 rounded-lg border border-gray-200">
+            <LineChart className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No enrichment sheets found</h3>
+            {searchTerm ? (
+              <p className="text-gray-500">No sheets match your search. Try a different term or clear the search.</p>
+            ) : (
+              <p className="text-gray-500">
+                You don't have any sheets in the enrichment process.
+                <br />
+                Connect a sheet and start the enrichment process from the Connected Sheets section.
+              </p>
+            )}
+            <button 
+              onClick={() => navigate('/')}
+              className="mt-4 inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
             >
-              {isLoading ? (
-                <>
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Loading Status... → Refreshing Status...
-                </>
-              ) : (
-                <>
-                  <RefreshCw className="h-5 w-5 mr-2" />
-                  Refresh Status
-                </>
-              )}
+              Go to Connected Sheets
+              <ArrowRight className="ml-2 h-4 w-4" />
             </button>
           </div>
-          
-          {/* Columns Status Table */}
-          <div className="overflow-x-auto border border-gray-200 rounded-lg shadow-sm">
+        )}
+        
+        {/* Table of enrichment sheets */}
+        {!isLoading && filteredSheets.length > 0 && !error && (
+          <div className="overflow-x-auto border border-gray-200 rounded-lg">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Column Name
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Filled Rows
+                    Sheet Name
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
                   </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Enrichment Columns
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Progress
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Last Updated
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {columnsStatus.map((column: any, index: any) => (
-                  <tr key={index} className={getCellBackgroundColor(column, index)}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {column.column}
-                      {index < 7 && <span className="ml-2 px-2 py-0.5 text-xs bg-blue-100 text-blue-800 rounded-full">Source</span>}
+                {filteredSheets.map((sheet, index) => (
+                  <tr key={index} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <div>
+                          <div className="text-sm font-medium text-gray-900">
+                            {sheet.title}
+                          </div>
+                          <div className="text-xs text-gray-500 flex items-center">
+                            <a 
+                              href={sheet.sheetUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-indigo-600 hover:text-indigo-900 inline-flex items-center"
+                            >
+                              View in Google Sheets
+                              <ExternalLink className="h-3 w-3 ml-1" />
+                            </a>
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {getStatusBadge(sheet.status)}
+                    </td>
+                    <td className="px-6 py-4">
+                      {renderSelectedColumns(sheet)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="w-full">
+                        <div className="flex justify-between text-xs text-gray-600 mb-1">
+                          <span>{sheet.enrichmentProgress || 0}%</span>
+                        </div>
+                        <div className="w-24 bg-gray-200 rounded-full h-1.5">
+                          <div 
+                            className={`h-1.5 rounded-full ${
+                              sheet.status === 'ENRICHMENT_COMPLETED' || sheet.status === 'COMPLETED'
+                                ? 'bg-green-600'
+                                : 'bg-blue-600'
+                            }`}
+                            style={{ width: `${sheet.enrichmentProgress || 0}%` }}
+                          />
+                        </div>
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {column.filledRows !== null ? column.filledRows-1 : '-'}
+                      {formatDate(sheet.updatedAt)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      {column.status === 'complete' && (
-                        <span className="px-2 py-1 bg-green-100 text-green-800 rounded-md flex items-center w-fit">
-                          <CheckCircle2 className="h-4 w-4 mr-1" />
-                          Complete
-                        </span>
-                      )}
-                      {column.status === 'in-progress' && (
-                        <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-md flex items-center w-fit">
-                          <svg className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                          In Progress
-                        </span>
-                      )}
-                      {column.status === 'pending' && (
-                        <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded-md flex items-center w-fit">
-                          <svg className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                          Pending
-                        </span>
-                      )}
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <div className="flex justify-end items-center space-x-3">
+                        <button
+                          onClick={() => handleViewEnrichmentStatus(sheet)}
+                          className="flex items-center px-3 py-1 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+                        >
+                          {sheet.status === 'ENRICHMENT_STARTED' ? (
+                            <>
+                              <Play className="h-3 w-3 mr-1" />
+                              Resume
+                            </>
+                          ) : (
+                            <>
+                              <LineChart className="h-3 w-3 mr-1" />
+                              View Status
+                            </>
+                          )}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-          
-          {/* Render Orchestration Status */}
-          {renderOrchestrationStatus()}
-          
-          {/* Start Orchestration Button */}
-          {lastFilledInfo && !isPolling && orchestrationStatus?.status !== 'running' && !isLoading && (
-            <div className="mt-8 flex justify-end">
-              <button
-                onClick={handleStartOrchestration}
-                disabled={isStartingEnrichment}
-                className={`flex items-center px-6 py-3 ${
-                  isStartingEnrichment 
-                    ? "bg-green-400 cursor-not-allowed" 
-                    : "bg-green-600 hover:bg-green-700"
-                } text-white rounded-lg transition-colors`}
-              >
-                {isStartingEnrichment ? (
-                  <>
-                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Starting workflow...
-                  </>
-                ) : (
-                  <>
-                    <Play className="h-5 w-5 mr-2" />
-                    Start Workflow
-                  </>
-                )}
-              </button>
-            </div>
-          )}
-          
-          {/* Explanation of the Table */}
-          <div className="mt-8 bg-gray-50 p-4 rounded-lg border border-gray-200">
-            <h3 className="text-sm font-medium text-gray-700 mb-2">Understanding Column Status:</h3>
-            <ul className="space-y-2 text-sm text-gray-600">
-              <li className="flex items-center">
-                <div className="w-4 h-4 bg-blue-50 border border-blue-100 rounded mr-2"></div>
-                <span><strong>Source columns:</strong> The first 7 columns containing your original lead data.</span>
-              </li>
-              <li className="flex items-center">
-                <div className="w-4 h-4 bg-green-50 border border-green-100 rounded mr-2"></div>
-                <span><strong>Complete columns:</strong> Enrichment data that has been fully processed.</span>
-              </li>
-              <li className="flex items-center">
-                <div className="w-4 h-4 bg-yellow-50 border border-yellow-100 rounded mr-2"></div>
-                <span><strong>In Progress columns:</strong> Enrichment is partially complete for these columns.</span>
-              </li>
-              <li className="flex items-center">
-                <div className="w-4 h-4 bg-gray-50 border border-gray-200 rounded mr-2"></div>
-                <span><strong>Pending columns:</strong> No enrichment has been started for these columns.</span>
-              </li>
-            </ul>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );
 };
 
-export default EnrichmentStatusPage;
+export default EnrichmentsLandingPage;

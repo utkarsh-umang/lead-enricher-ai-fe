@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { FileSpreadsheet, LayoutGrid, ChevronLeft, Menu, Brain } from 'lucide-react';
+import { FileSpreadsheet, LayoutGrid, ChevronLeft, Menu, Brain, LineChart } from 'lucide-react';
 import { clsx } from 'clsx';
 
 type NavItem = {
@@ -18,8 +18,11 @@ const Sidebar = () => {
   
   // Determine active section based on path
   const getActiveSection = (path: string) => {
-    if (path === '/' || path.startsWith('/connect') || path.startsWith('/sheet-details') || path.startsWith('/enrichment-status')) {
+    if (path === '/' || path.startsWith('/connect') || path.startsWith('/sheet-details')) {
       return 'sheets';
+    }
+    if (path.startsWith('/enrichment') || path.startsWith('/enrichments')) {
+      return 'enrichments';
     }
     if (path.startsWith('/campaigns')) {
       return 'campaigns';
@@ -41,6 +44,12 @@ const Sidebar = () => {
       path: '/',
       icon: <FileSpreadsheet className="h-5 w-5" />,
       section: 'sheets'
+    },
+    {
+      name: 'Enrichments',
+      path: '/enrichments', // Updated to point to the new landing page
+      icon: <LineChart className="h-5 w-5" />,
+      section: 'enrichments'
     },
     {
       name: 'Campaigns',

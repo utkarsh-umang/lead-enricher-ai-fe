@@ -2,7 +2,8 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import ConnectPage from './pages/ConnectPage';
 import ConnectedSheetsPage from './pages/ConnectedSheetsPage';
 import SheetDetailsPage from './pages/SheetDetailsPage';
-import EnrichmentStatusPage from './pages/EnrichmentPage';
+import EnrichmentStatusPage from './pages/EnrichmentStatusPage';
+import EnrichmentsLandingPage from './pages/EnrichmentPage';
 import CampaignsPage from './pages/CampaignsPage';
 import AuthPage from './pages/AuthPage';
 import WavyBackground from './components/Background';
@@ -63,6 +64,16 @@ const App = () => {
             element={
               <ProtectedRoute>
                 <SheetDetailsPage />
+              </ProtectedRoute>
+            } 
+          />
+          
+          {/* Dashboard routes - Enrichments section */}
+          <Route 
+            path="/enrichments" 
+            element={
+              <ProtectedRoute>
+                <EnrichmentsLandingPage />
               </ProtectedRoute>
             } 
           />
