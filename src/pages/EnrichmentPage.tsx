@@ -80,6 +80,33 @@ const EnrichmentsLandingPage = () => {
     navigate('/enrichment-status');
   };
 
+  // Calculate progress percentage
+  const calculateProgressPercentage = (sheet: any) => {
+    if (!sheet.enrichmentColumnsInfo || !sheet.totalRows || sheet.totalRows === 0) {
+      return 0;
+    }
+    // Get all the last_updated_row values
+    const columnsInfo = sheet.enrichmentColumnsInfo;
+    // Sum all last_updated_row values
+    let totalProcessedRows = 0;
+    let columnsCount = 0;
+    Object.keys(columnsInfo).forEach(columnName => {
+      const columnInfo = columnsInfo[columnName];
+      if (columnInfo && typeof columnInfo.last_updated_row === 'number') {
+        totalProcessedRows += columnInfo.last_updated_row;
+        columnsCount++;
+      }
+    });
+    // If there are no columns with data, return 0
+    if (columnsCount === 0) return 0;
+    // Calculate the average rows processed
+    const avgRowsProcessed = totalProcessedRows / columnsCount;
+    // Calculate progress as a percentage of total rows
+    const progressPercentage = (avgRowsProcessed / sheet.totalRows) * 100;
+    // Round to 2 decimal places and ensure it doesn't exceed 100%
+    return Math.min(Math.round(progressPercentage * 100) / 100, 100);
+  };
+
   // Get status badge based on sheet status
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -306,76 +333,79 @@ const EnrichmentsLandingPage = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredSheets.map((sheet, index) => (
-                  <tr key={index} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div>
-                          <div className="text-sm font-medium text-gray-900">
-                            {sheet.title}
+                {filteredSheets.map((sheet, index) => {
+                  const progressPercentage = calculateProgressPercentage(sheet);
+                  return (
+                    <tr key={index} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div>
+                            <div className="text-sm font-medium text-gray-900">
+                              {sheet.title}
+                            </div>
+                            <div className="text-xs text-gray-500 flex items-center">
+                              <a 
+                                href={sheet.sheetUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-indigo-600 hover:text-indigo-900 inline-flex items-center"
+                              >
+                                View in Google Sheets
+                                <ExternalLink className="h-3 w-3 ml-1" />
+                              </a>
+                            </div>
                           </div>
-                          <div className="text-xs text-gray-500 flex items-center">
-                            <a 
-                              href={sheet.sheetUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-indigo-600 hover:text-indigo-900 inline-flex items-center"
-                            >
-                              View in Google Sheets
-                              <ExternalLink className="h-3 w-3 ml-1" />
-                            </a>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {getStatusBadge(sheet.status)}
+                      </td>
+                      <td className="px-6 py-4">
+                        {renderSelectedColumns(sheet)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="w-full">
+                          <div className="flex justify-between text-xs text-gray-600 mb-1">
+                            <span>{progressPercentage.toFixed(0)}%</span>
+                          </div>
+                          <div className="w-24 bg-gray-200 rounded-full h-1.5">
+                            <div 
+                              className={`h-1.5 rounded-full ${
+                                sheet.status === 'ENRICHMENT_COMPLETED' || sheet.status === 'COMPLETED'
+                                  ? 'bg-green-600'
+                                  : 'bg-blue-600'
+                              }`}
+                              style={{ width: `${progressPercentage}%` }}
+                            />
                           </div>
                         </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {getStatusBadge(sheet.status)}
-                    </td>
-                    <td className="px-6 py-4">
-                      {renderSelectedColumns(sheet)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="w-full">
-                        <div className="flex justify-between text-xs text-gray-600 mb-1">
-                          <span>{sheet.enrichmentProgress || 0}%</span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {formatDate(sheet.updatedAt)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div className="flex justify-end items-center space-x-3">
+                          <button
+                            onClick={() => handleViewEnrichmentStatus(sheet)}
+                            className="flex items-center px-3 py-1 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+                          >
+                            {sheet.status === 'ENRICHMENT_STARTED' ? (
+                              <>
+                                <Play className="h-3 w-3 mr-1" />
+                                Resume
+                              </>
+                            ) : (
+                              <>
+                                <LineChart className="h-3 w-3 mr-1" />
+                                View Status
+                              </>
+                            )}
+                          </button>
                         </div>
-                        <div className="w-24 bg-gray-200 rounded-full h-1.5">
-                          <div 
-                            className={`h-1.5 rounded-full ${
-                              sheet.status === 'ENRICHMENT_COMPLETED' || sheet.status === 'COMPLETED'
-                                ? 'bg-green-600'
-                                : 'bg-blue-600'
-                            }`}
-                            style={{ width: `${sheet.enrichmentProgress || 0}%` }}
-                          />
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {formatDate(sheet.updatedAt)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex justify-end items-center space-x-3">
-                        <button
-                          onClick={() => handleViewEnrichmentStatus(sheet)}
-                          className="flex items-center px-3 py-1 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
-                        >
-                          {sheet.status === 'ENRICHMENT_STARTED' ? (
-                            <>
-                              <Play className="h-3 w-3 mr-1" />
-                              Resume
-                            </>
-                          ) : (
-                            <>
-                              <LineChart className="h-3 w-3 mr-1" />
-                              View Status
-                            </>
-                          )}
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

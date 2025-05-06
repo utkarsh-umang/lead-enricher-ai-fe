@@ -59,6 +59,7 @@ export interface EnrichmentColumnsResponse {
   success: boolean;
   spreadsheet_id: string;
   enrichment_columns: string[];
+  enrichment_columns_info?: any[];
   message?: string;
   error?: string;
 }
@@ -349,7 +350,8 @@ export const getAllSheets = async (): Promise<Sheet[]> => {
     // Transform the API response to our Sheet interface
     const sheets: Sheet[] = await Promise.all(data.sheets.map(async (sheet: any) => {
       let enrichmentColumns: string[] = [];
-      let enrichmentProgress = 0;
+      let enrichmentColumnsInfo: any[] = [];
+      let totalRows: number = 0;
       
       // For sheets with ENRICHMENT status, fetch additional enrichment info
       if (sheet.status === 'ENRICHMENT_STARTED' || sheet.status === 'ENRICHMENT_COMPLETED') {
@@ -357,23 +359,8 @@ export const getAllSheets = async (): Promise<Sheet[]> => {
           const enrichmentInfo = await getSheetInfo(sheet.sheet_id);
           if (enrichmentInfo.success) {
             enrichmentColumns = enrichmentInfo.enrichment_columns || [];
-            
-            // Calculate progress based on enrichment_columns_info if available
-            if (enrichmentInfo.enrichment_columns_info) {
-              // Get the total number of processed rows across all columns
-              let totalProcessed = 0;
-              let totalToProcess = 0;
-              
-              Object.keys(enrichmentInfo.enrichment_columns_info).forEach(column => {
-                const lastUpdatedRow = enrichmentInfo.enrichment_columns_info[column].last_updated_row || 0;
-                totalProcessed += lastUpdatedRow;
-                totalToProcess += 100; // Placeholder - replace with actual total rows
-              });
-              
-              if (totalToProcess > 0) {
-                enrichmentProgress = Math.floor((totalProcessed / totalToProcess) * 100);
-              }
-            }
+            enrichmentColumnsInfo = enrichmentInfo.enrichment_columns_info || [];
+            totalRows = enrichmentInfo.total_rows;
           }
         } catch (enrichmentError) {
           console.error(`Error fetching enrichment info for sheet ${sheet.sheet_id}:`, enrichmentError);
@@ -387,7 +374,8 @@ export const getAllSheets = async (): Promise<Sheet[]> => {
         sheetName: sheet.sheet_name,
         status: sheet.status,
         enrichmentColumns,
-        enrichmentProgress,
+        enrichmentColumnsInfo,
+        totalRows,
         createdAt: sheet.created_at,
         updatedAt: sheet.updated_at
       };
