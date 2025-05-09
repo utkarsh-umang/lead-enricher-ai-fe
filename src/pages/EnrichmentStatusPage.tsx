@@ -72,12 +72,14 @@ const EnrichmentStatusPage = () => {
     setIsLoading(true);
     const agencyId = localStorage.getItem('userAgencyId');
     try {
+      const sheetInfoRes = await fetch(`${API_BASE_URL}/google-sheet/get-sheet-info/${sheetDetails.spreadsheetId}`);
+      const sheetInfo = await sheetInfoRes.json();
+      if (!sheetInfo.success) throw new Error('Failed to fetch sheet info');
+      const enrichmentColumns = sheetInfo.enrichment_columns || [];
+
       const response = await fetch(`${API_BASE_URL}/google-sheet/get-last-filled-rows`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'accept': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json', 'accept': 'application/json' },
         body: JSON.stringify({
           spreadsheet_url: sheetDetails.sheetUrl,
           agency_id: agencyId,
@@ -85,51 +87,30 @@ const EnrichmentStatusPage = () => {
         })
       });
       
-      if (!response.ok) {
-        throw new Error(`API returned status ${response.status}`);
-      }
-      
+      if (!response.ok) throw new Error(`API returned status ${response.status}`);
       const data = await response.json();
-      console.log('API Response:', data);
-      
-      // Transform the API response to our column status format
+  
       const lastFilledRows = data.last_filled_rows;
       const columnPositions = data.column_positions;
       const totalRows = data.total_rows;
-      
-      // Get all column names in their correct order based on column_positions
-      const orderedColumns = Object.entries(columnPositions)
-        .sort((a: any, b: any) => a[1] - b[1])
-        .map(entry => entry[0]);
-      
-      const statusData = orderedColumns.map(columnName => {
+  
+      const filteredColumnPositions = Object.entries(columnPositions)
+        .filter(([col]) => enrichmentColumns.includes(col))
+        .sort((a: any, b: any) => a[1] - b[1]);
+  
+      const statusData = filteredColumnPositions.map(([columnName]) => {
         const filledRows = lastFilledRows[columnName]?.last_row || 0;
         let status = 'pending';
-        
-        if (filledRows > 0) {
-          status = filledRows === totalRows ? 'complete' : 'in-progress';
-        }
-        
-        return {
-          column: columnName,
-          filledRows: filledRows,
-          status: status
-        };
+        if (filledRows > 0) status = filledRows === totalRows ? 'complete' : 'in-progress';
+        return { column: columnName, filledRows, status };
       });
-      
+  
       setColumnsStatus(statusData);
-      
-      // Determine source columns (first 7 in this case based on your description)
-      // and find the max filled row among them
-      const sourceColumns = orderedColumns.slice(0, 7);
-      const sourceLastRow = Math.max(...sourceColumns.map(col => lastFilledRows[col]?.last_row || 0));
-      
-      // Set the last filled info
+  
+      const maxRow = Math.max(...statusData.map(col => col.filledRows || 0));
       setLastFilledInfo({
-        lastFilledRow: sourceLastRow,
-        lastFilledColumns: orderedColumns
-          .filter(col => lastFilledRows[col]?.last_row === sourceLastRow)
-          .map(col => col)
+        lastFilledRow: maxRow,
+        lastFilledColumns: statusData.filter(col => col.filledRows === maxRow).map(col => col.column)
       });
       
     } catch (error: any) {
