@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { FileSpreadsheet, LayoutGrid, ChevronLeft, Menu, Brain, LineChart } from 'lucide-react';
+import { FileSpreadsheet, LayoutGrid, BellElectric, Menu, Brain, LineChart } from 'lucide-react';
 import { clsx } from 'clsx';
 
 type NavItem = {
@@ -47,15 +47,21 @@ const Sidebar = () => {
     },
     {
       name: 'Enrichments',
-      path: '/enrichments', // Updated to point to the new landing page
+      path: '/enrichments',
       icon: <LineChart className="h-5 w-5" />,
       section: 'enrichments'
     },
     {
-      name: 'Campaigns',
+      name: 'Outreach Campaigns',
       path: '/campaigns',
       icon: <LayoutGrid className="h-5 w-5" />,
       section: 'campaigns'
+    },
+    {
+      name: 'Subsequence',
+      path: '/subsequence',
+      icon: <BellElectric className="h-5 w-5" />,
+      section: 'subsequence'
     }
   ];
   
@@ -121,7 +127,7 @@ const Sidebar = () => {
             onClick={toggleCollapse}
             className="p-2 rounded-md text-gray-500 hover:bg-gray-100 lg:block hidden"
           >
-            <ChevronLeft className={clsx(
+            <BellElectric className={clsx(
               "h-5 w-5 transition-transform",
               collapsed && "rotate-180"
             )} />

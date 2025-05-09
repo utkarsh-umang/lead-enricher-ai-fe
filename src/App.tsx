@@ -4,7 +4,8 @@ import ConnectedSheetsPage from './pages/ConnectedSheetsPage';
 import SheetDetailsPage from './pages/SheetDetailsPage';
 import EnrichmentStatusPage from './pages/EnrichmentStatusPage';
 import EnrichmentsLandingPage from './pages/EnrichmentPage';
-import CampaignsPage from './pages/CampaignsPage';
+import SubsequqncePage from './pages/SubsequencePage';
+import OutreachCampaignsPage from './pages/CampaignsPage';
 import AuthPage from './pages/AuthPage';
 import WavyBackground from './components/Background';
 import DashboardLayout from './components/DashboardLayout';
@@ -85,13 +86,22 @@ const App = () => {
               </ProtectedRoute>
             } 
           />
-          
-          {/* Dashboard routes - Campaigns section */}
+
+          {/* Dashboard routes - Outreach section */}
           <Route 
-            path="/campaigns" 
+            path="/outreach-campaigns" 
             element={
               <ProtectedRoute>
-                <CampaignsPage />
+                <OutreachCampaignsPage />
+              </ProtectedRoute>
+            } 
+          />
+          
+          <Route 
+            path="/subsequence" 
+            element={
+              <ProtectedRoute>
+                <SubsequqncePage />
               </ProtectedRoute>
             } 
           />
