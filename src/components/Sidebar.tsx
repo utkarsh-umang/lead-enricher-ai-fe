@@ -53,7 +53,7 @@ const Sidebar = () => {
     },
     {
       name: 'Outreach Campaigns',
-      path: '/campaigns',
+      path: '/outreach-campaigns',
       icon: <LayoutGrid className="h-5 w-5" />,
       section: 'campaigns'
     },
