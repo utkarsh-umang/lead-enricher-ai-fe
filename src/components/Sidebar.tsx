@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { FileSpreadsheet, LayoutGrid, BellElectric, Menu, Brain, LineChart } from 'lucide-react';
+import { FileSpreadsheet, LayoutGrid, BellElectric, Menu, Brain, LineChart, ChevronLeft } from 'lucide-react';
 import { clsx } from 'clsx';
 
 type NavItem = {
@@ -58,7 +58,7 @@ const Sidebar = () => {
       section: 'campaigns'
     },
     {
-      name: 'Subsequence',
+      name: 'Subsequence Triggers',
       path: '/subsequence',
       icon: <BellElectric className="h-5 w-5" />,
       section: 'subsequence'
@@ -127,7 +127,7 @@ const Sidebar = () => {
             onClick={toggleCollapse}
             className="p-2 rounded-md text-gray-500 hover:bg-gray-100 lg:block hidden"
           >
-            <BellElectric className={clsx(
+            <ChevronLeft className={clsx(
               "h-5 w-5 transition-transform",
               collapsed && "rotate-180"
             )} />

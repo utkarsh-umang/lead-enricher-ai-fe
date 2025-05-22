@@ -352,6 +352,7 @@ export const getAllSheets = async (): Promise<Sheet[]> => {
       let enrichmentColumns: string[] = [];
       let enrichmentColumnsInfo: any[] = [];
       let totalRows: number = 0;
+      let outreachCount: number = 0;
       
       // For sheets with ENRICHMENT status, fetch additional enrichment info
       if (sheet.status === 'ENRICHMENT_STARTED' || sheet.status === 'ENRICHMENT_COMPLETED') {
@@ -361,6 +362,7 @@ export const getAllSheets = async (): Promise<Sheet[]> => {
             enrichmentColumns = enrichmentInfo.enrichment_columns || [];
             enrichmentColumnsInfo = enrichmentInfo.enrichment_columns_info || [];
             totalRows = enrichmentInfo.total_rows;
+            outreachCount = enrichmentInfo.custom_outreach_message_count;
           }
         } catch (enrichmentError) {
           console.error(`Error fetching enrichment info for sheet ${sheet.sheet_id}:`, enrichmentError);
@@ -376,6 +378,7 @@ export const getAllSheets = async (): Promise<Sheet[]> => {
         enrichmentColumns,
         enrichmentColumnsInfo,
         totalRows,
+        outreachCount,
         createdAt: sheet.created_at,
         updatedAt: sheet.updated_at
       };

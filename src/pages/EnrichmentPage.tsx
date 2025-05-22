@@ -389,17 +389,10 @@ const EnrichmentsLandingPage = () => {
                             onClick={() => handleViewEnrichmentStatus(sheet)}
                             className="flex items-center px-3 py-1 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
                           >
-                            {sheet.status === 'ENRICHMENT_STARTED' ? (
-                              <>
-                                <Play className="h-3 w-3 mr-1" />
-                                Resume
-                              </>
-                            ) : (
-                              <>
-                                <LineChart className="h-3 w-3 mr-1" />
-                                View Status
-                              </>
-                            )}
+                            <>
+                              <Play className="h-3 w-3 mr-1" />
+                              View Details
+                            </>
                           </button>
                         </div>
                       </td>

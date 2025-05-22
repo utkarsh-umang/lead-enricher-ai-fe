@@ -6,6 +6,7 @@ import EnrichmentStatusPage from './pages/EnrichmentStatusPage';
 import EnrichmentsLandingPage from './pages/EnrichmentPage';
 import SubsequqncePage from './pages/SubsequencePage';
 import OutreachCampaignsPage from './pages/CampaignsPage';
+import CampaignDetailsPage from './pages/CampaignDetails';
 import AuthPage from './pages/AuthPage';
 import WavyBackground from './components/Background';
 import DashboardLayout from './components/DashboardLayout';
@@ -93,6 +94,14 @@ const App = () => {
             element={
               <ProtectedRoute>
                 <OutreachCampaignsPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/campaign-details" 
+            element={
+              <ProtectedRoute>
+                <CampaignDetailsPage />
               </ProtectedRoute>
             } 
           />

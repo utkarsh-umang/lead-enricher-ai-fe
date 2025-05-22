@@ -60,8 +60,8 @@ const OutreachCampaignsPage = () => {
       enrichmentColumns: sheet.enrichmentColumns
     };
     
-    localStorage.setItem('outreachSheet', JSON.stringify(outreachData));
-    navigate('/outreach-setup');
+    localStorage.setItem('campaignData', JSON.stringify(outreachData));
+    navigate('/campaign-details');
   };
 
   const handleViewCampaign = (sheet: any) => {
@@ -125,13 +125,12 @@ const OutreachCampaignsPage = () => {
   };
 
   // Get campaign metrics (placeholder for now - to be implemented)
-  const getCampaignMetrics = (sheet: any) => {
+  const getCampaignProgress = (sheet: any) => {
     // This would be replaced with actual metrics from the API
     return {
-      sent: Math.floor(Math.random() * 100),
-      opened: Math.floor(Math.random() * 50),
-      replied: Math.floor(Math.random() * 25),
-      bounced: Math.floor(Math.random() * 10)
+      total: sheet.totalRows,
+      generated: sheet.outreachCount,
+      percentage: Math.floor((sheet.outreachCount/sheet.totalRows)*100)
     };
   };
 
@@ -226,7 +225,7 @@ const OutreachCampaignsPage = () => {
                     Leads
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Campaign Metrics
+                    Progress
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Last Updated
@@ -238,7 +237,7 @@ const OutreachCampaignsPage = () => {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredSheets.map((sheet: any, index: any) => {
-                  const metrics = getCampaignMetrics(sheet);
+                  const progress = getCampaignProgress(sheet);
                   return (
                     <tr key={index} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -270,23 +269,19 @@ const OutreachCampaignsPage = () => {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        {sheet.status === 'OUTREACH_STARTED' || sheet.status === 'COMPLETED' ? (
+                        {sheet.status === 'ENRICHMENT_COMPLETED' || sheet.status === 'COMPLETED' ? (
                           <div className="flex space-x-4">
                             <div className="text-center">
-                              <div className="text-sm font-medium text-gray-900">{metrics.sent}</div>
-                              <div className="text-xs text-gray-500">Sent</div>
+                              <div className="text-sm font-medium text-gray-900">{progress.total}</div>
+                              <div className="text-xs text-gray-500">Total</div>
                             </div>
                             <div className="text-center">
-                              <div className="text-sm font-medium text-gray-900">{metrics.opened}</div>
-                              <div className="text-xs text-gray-500">Opened</div>
+                              <div className="text-sm font-medium text-gray-900">{progress.generated}</div>
+                              <div className="text-xs text-gray-500">Generated</div>
                             </div>
                             <div className="text-center">
-                              <div className="text-sm font-medium text-green-600">{metrics.replied}</div>
-                              <div className="text-xs text-gray-500">Replied</div>
-                            </div>
-                            <div className="text-center">
-                              <div className="text-sm font-medium text-red-600">{metrics.bounced}</div>
-                              <div className="text-xs text-gray-500">Bounced</div>
+                              <div className="text-sm font-medium text-green-600">{progress.percentage}</div>
+                              <div className="text-xs text-gray-500">Percentage</div>
                             </div>
                           </div>
                         ) : (
@@ -304,7 +299,7 @@ const OutreachCampaignsPage = () => {
                               className="flex items-center px-3 py-1 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
                             >
                               <PlusCircle className="h-3 w-3 mr-1" />
-                              Start Outreach Generation
+                              View Details
                             </button>
                           )}
                           {(sheet.status === 'OUTREACH_STARTED' || sheet.status === 'COMPLETED') && (

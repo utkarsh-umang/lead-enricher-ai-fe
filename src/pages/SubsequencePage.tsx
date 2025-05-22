@@ -6,10 +6,10 @@ const SubsequencePage = () => {
       {/* Header section */}
       <div className="text-center mb-12">
         <h1 className="text-4xl font-bold text-gray-900 mb-4">
-          Your Subsequences
+          Your Subsequence Triggers
         </h1>
         <p className="text-lg text-gray-600">
-          Create and manage your subsequence campaigns
+          Create and manage your subsequence triggers for your campaigns!
         </p>
       </div>
       
@@ -30,7 +30,7 @@ const SubsequencePage = () => {
       <div className="bg-indigo-50 p-8 rounded-xl text-center">
         <h2 className="text-2xl font-semibold text-indigo-900 mb-6">Coming Soon</h2>
         <p className="text-indigo-700">
-          The subsequence feature is coming soon. You'll be able to create and manage automated
+          The subsequence trigger feature is coming soon. You'll be able to create and manage automated
           subsequence outreach triggers using your enriched lead data.
         </p>
       </div>
