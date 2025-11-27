@@ -8,8 +8,8 @@ import SubsequqncePage from './pages/SubsequencePage';
 import OutreachCampaignsPage from './pages/CampaignsPage';
 import CampaignDetailsPage from './pages/CampaignDetails';
 import AuthPage from './pages/AuthPage';
-import WavyBackground from './components/Background';
 import DashboardLayout from './components/DashboardLayout';
+import { ThemeProvider } from './theme/ThemeContext';
 
 // Protected route component
 const ProtectedRoute = ({ children }: any) => {
@@ -28,20 +28,14 @@ const ProtectedRoute = ({ children }: any) => {
 
 const App = () => {
   return (
-    <div className="relative min-h-screen">
-      <BrowserRouter>
-        <Routes>
+    <ThemeProvider>
+      <div className="relative min-h-screen">
+        <BrowserRouter>
+          <Routes>
           {/* Auth route */}
           <Route 
             path="/login" 
-            element={
-              <>
-                <WavyBackground />
-                <main>
-                  <AuthPage />
-                </main>
-              </>
-            } 
+            element={<AuthPage />} 
           />
           
           {/* Dashboard routes - Sheets section */}
@@ -117,9 +111,10 @@ const App = () => {
           
           {/* Fallback route */}
           <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </BrowserRouter>
-    </div>
+          </Routes>
+        </BrowserRouter>
+      </div>
+    </ThemeProvider>
   );
 };
 
