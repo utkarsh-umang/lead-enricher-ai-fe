@@ -8,12 +8,15 @@ import SubsequqncePage from './pages/SubsequencePage';
 import OutreachCampaignsPage from './pages/CampaignsPage';
 import CampaignDetailsPage from './pages/CampaignDetails';
 import AuthPage from './pages/AuthPage';
+import LandingPage from './pages/LandingPage';
 import DashboardLayout from './components/DashboardLayout';
+import LandingLayout from './components/LandingLayout';
 import { ThemeProvider } from './theme/ThemeContext';
+import { authService } from './services/authService';
 
-// Protected route component
+// Protected route component - for logged in users
 const ProtectedRoute = ({ children }: any) => {
-  const isAuthenticated = !!localStorage.getItem('userToken');
+  const isAuthenticated = authService.isLoggedIn();
   
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
@@ -26,21 +29,71 @@ const ProtectedRoute = ({ children }: any) => {
   );
 };
 
+// Public route component - for not logged in users
+const PublicRoute = ({ children }: any) => {
+  const isAuthenticated = authService.isLoggedIn();
+  
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
+  
+  return (
+    <LandingLayout>
+      {children}
+    </LandingLayout>
+  );
+};
+
+// Root route - shows landing if not logged in, dashboard if logged in
+const RootRoute = () => {
+  const isAuthenticated = authService.isLoggedIn();
+  
+  if (isAuthenticated) {
+    return (
+      <DashboardLayout>
+        <ConnectedSheetsPage />
+      </DashboardLayout>
+    );
+  }
+  
+  return (
+    <LandingLayout>
+      <LandingPage />
+    </LandingLayout>
+  );
+};
+
 const App = () => {
   return (
     <ThemeProvider>
       <div className="relative min-h-screen">
         <BrowserRouter>
           <Routes>
-          {/* Auth route */}
-          <Route 
-            path="/login" 
-            element={<AuthPage />} 
-          />
-          
-          {/* Dashboard routes - Sheets section */}
+          {/* Root route - Landing page or redirect to dashboard */}
           <Route 
             path="/" 
+            element={<RootRoute />} 
+          />
+          <Route 
+            path="/login" 
+            element={
+              <PublicRoute>
+                <AuthPage />
+              </PublicRoute>
+            } 
+          />
+          <Route 
+            path="/signup" 
+            element={
+              <PublicRoute>
+                <AuthPage />
+              </PublicRoute>
+            } 
+          />
+          
+          {/* Protected routes - Dashboard section */}
+          <Route 
+            path="/dashboard" 
             element={
               <ProtectedRoute>
                 <ConnectedSheetsPage />
