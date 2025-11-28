@@ -13,6 +13,7 @@ import { getAllSheets } from '../services/sheetService';
 import * as CampaignService from '../services/campaignService';
 import EmailGenerator from '../services/emailGenerator';
 import FinalizeModal from '../components/FinalizeCampaignModal';
+import AdvancedScrapingSettingsModal from '../components/AdvancedScrapingSettingsModal';
 import CampaignMetricsCards from '../components/CampaignMetricsCards';
 import CampaignLeadsTable from '../components/CampaignLeadsTable';
 import { useTheme } from '../theme';
@@ -160,6 +161,8 @@ const CampaignDetailsPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isScrapingModalOpen, setIsScrapingModalOpen] = useState(false);
+  const [isStartingScraping, setIsStartingScraping] = useState(false);
   const [viewMode, setViewMode] = useState<'overview' | 'template'>('overview');
   const [storedData, setStoredData] = useState<StoredCampaignData | null>(null);
   const [isEmailGenerationConfigured, setIsEmailGenerationConfigured] = useState(false);
@@ -486,10 +489,53 @@ const CampaignDetailsPage = () => {
 
   // Handle configure scraping button click
   const handleConfigureScraping = () => {
-    // TODO: Implement scraping configuration logic
-    console.log('Configure and Start Scraping clicked');
-    // This should open a modal or navigate to scraping configuration page
-    // For now, we'll just log it
+    setIsScrapingModalOpen(true);
+  };
+
+  // Handle close scraping modal
+  const handleCloseScrapingModal = () => {
+    if (!isStartingScraping) {
+      setIsScrapingModalOpen(false);
+    }
+  };
+
+  // Handle start scraping
+  const handleStartScraping = async (enabledDefaultCategories: string[], customCategories: Array<{ id: string; name: string; keywords: string[] }>) => {
+    setIsStartingScraping(true);
+    
+    try {
+      // TODO: Implement actual scraping API call
+      // For now, we'll simulate the API call
+      console.log('Starting scraping with enabled default categories:', enabledDefaultCategories);
+      console.log('Starting scraping with custom categories:', customCategories);
+      
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Update stored data to reflect scraping has started
+      const updatedStoredData = {
+        ...storedData,
+        progress: 1, // Start with 1% progress
+        status: 'Scraping in Progress'
+      };
+      
+      setStoredData(updatedStoredData);
+      localStorage.setItem('campaignData', JSON.stringify(updatedStoredData));
+      
+      // Close modal
+      setIsScrapingModalOpen(false);
+      
+      // Show success message
+      setSaveSuccess(true);
+      setTimeout(() => {
+        setSaveSuccess(false);
+      }, 3000);
+    } catch (err) {
+      console.error("Error starting scraping:", err);
+      setError("Failed to start scraping. Please try again.");
+    } finally {
+      setIsStartingScraping(false);
+    }
   };
 
   // Handle configure email generation button click
@@ -1024,6 +1070,14 @@ const CampaignDetailsPage = () => {
         onFinalize={handleFinalizeCampaign}
         isLoading={isSaving}
         defaultTemplateName={templateData?.name || ''}
+      />
+
+      {/* Advanced Scraping Settings Modal */}
+      <AdvancedScrapingSettingsModal
+        isOpen={isScrapingModalOpen}
+        onClose={handleCloseScrapingModal}
+        onStartScraping={handleStartScraping}
+        isLoading={isStartingScraping}
       />
     </div>
   );
