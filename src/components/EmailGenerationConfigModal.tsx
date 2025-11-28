@@ -229,7 +229,7 @@ const EmailGenerationConfigModal = ({
                     }}
                     disabled={isLoading}
                     placeholder="Describe your product, service, or offer. Be specific about the value proposition to maximize your promotion, communication, and usage and management..."
-                    className="w-full h-64 px-4 py-3 rounded-md resize-none focus:outline-none focus:ring-2 disabled:opacity-50"
+                    className="w-full h-64 px-4 py-3 rounded-md resize-none focus:outline-none disabled:opacity-50"
                     style={{
                       borderColor: errors.offer ? theme.palette.error.main : theme.palette.divider,
                       backgroundColor: theme.palette.background.default,
@@ -280,14 +280,25 @@ const EmailGenerationConfigModal = ({
                       type="button"
                       onClick={() => !isLoading && setCoreAngle('pain')}
                       disabled={isLoading}
-                      className="p-4 rounded-lg transition-all text-center focus:outline-none focus:ring-2 disabled:opacity-50"
+                      className="p-4 rounded-lg transition-all text-center focus:outline-none disabled:opacity-50"
                       style={{
-                        backgroundColor: coreAngle === 'pain' ? theme.palette.primary.light : 'transparent',
+                        backgroundColor: coreAngle === 'pain' ? theme.palette.primary.light : theme.palette.background.paper,
                         borderColor: coreAngle === 'pain' ? theme.palette.primary.main : theme.palette.divider,
                         borderWidth: coreAngle === 'pain' ? '3px' : '1px',
                         borderStyle: 'solid',
-                        boxShadow: coreAngle === 'pain' ? `0 4px 12px ${theme.palette.primary.main}40` : 'none',
-                        transform: coreAngle === 'pain' ? 'scale(1.02)' : 'scale(1)'
+                        boxShadow: coreAngle === 'pain' ? `0 4px 16px ${theme.palette.primary.main}60, 0 0 0 2px ${theme.palette.primary.light}` : 'none',
+                        transform: coreAngle === 'pain' ? 'scale(1.03)' : 'scale(1)',
+                        outline: 'none'
+                      }}
+                      onFocus={(e) => {
+                        if (!isLoading && coreAngle !== 'pain') {
+                          e.currentTarget.style.boxShadow = `0 0 0 3px ${theme.palette.primary.light}80`;
+                        }
+                      }}
+                      onBlur={(e) => {
+                        if (coreAngle !== 'pain') {
+                          e.currentTarget.style.boxShadow = 'none';
+                        }
                       }}
                       onMouseEnter={(e) => {
                         if (!isLoading && coreAngle !== 'pain') {
@@ -296,11 +307,19 @@ const EmailGenerationConfigModal = ({
                       }}
                       onMouseLeave={(e) => {
                         if (!isLoading && coreAngle !== 'pain') {
-                          e.currentTarget.style.backgroundColor = 'transparent';
+                          e.currentTarget.style.backgroundColor = theme.palette.background.paper;
                         }
                       }}
                     >
-                      <div className="flex flex-col items-center gap-3">
+                      <div className="flex flex-col items-center gap-3 relative">
+                        {coreAngle === 'pain' && (
+                          <div 
+                            className="absolute -top-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center z-10"
+                            style={{ backgroundColor: theme.palette.primary.main }}
+                          >
+                            <Check className="w-4 h-4" style={{ color: theme.palette.primary.contrastText }} />
+                          </div>
+                        )}
                         <div 
                           className="w-12 h-12 rounded-lg flex items-center justify-center"
                           style={{ backgroundColor: '#EF4444' }}
@@ -329,14 +348,25 @@ const EmailGenerationConfigModal = ({
                       type="button"
                       onClick={() => !isLoading && setCoreAngle('objective')}
                       disabled={isLoading}
-                      className="p-4 rounded-lg transition-all text-center focus:outline-none focus:ring-2 disabled:opacity-50"
+                      className="p-4 rounded-lg transition-all text-center focus:outline-none disabled:opacity-50"
                       style={{
-                        backgroundColor: coreAngle === 'objective' ? theme.palette.primary.light : 'transparent',
+                        backgroundColor: coreAngle === 'objective' ? theme.palette.primary.light : theme.palette.background.paper,
                         borderColor: coreAngle === 'objective' ? theme.palette.primary.main : theme.palette.divider,
                         borderWidth: coreAngle === 'objective' ? '3px' : '1px',
                         borderStyle: 'solid',
-                        boxShadow: coreAngle === 'objective' ? `0 4px 12px ${theme.palette.primary.main}40` : 'none',
-                        transform: coreAngle === 'objective' ? 'scale(1.02)' : 'scale(1)'
+                        boxShadow: coreAngle === 'objective' ? `0 4px 16px ${theme.palette.primary.main}60, 0 0 0 2px ${theme.palette.primary.light}` : 'none',
+                        transform: coreAngle === 'objective' ? 'scale(1.03)' : 'scale(1)',
+                        outline: 'none'
+                      }}
+                      onFocus={(e) => {
+                        if (!isLoading && coreAngle !== 'objective') {
+                          e.currentTarget.style.boxShadow = `0 0 0 3px ${theme.palette.primary.light}80`;
+                        }
+                      }}
+                      onBlur={(e) => {
+                        if (coreAngle !== 'objective') {
+                          e.currentTarget.style.boxShadow = 'none';
+                        }
                       }}
                       onMouseEnter={(e) => {
                         if (!isLoading && coreAngle !== 'objective') {
@@ -345,11 +375,19 @@ const EmailGenerationConfigModal = ({
                       }}
                       onMouseLeave={(e) => {
                         if (!isLoading && coreAngle !== 'objective') {
-                          e.currentTarget.style.backgroundColor = 'transparent';
+                          e.currentTarget.style.backgroundColor = theme.palette.background.paper;
                         }
                       }}
                     >
-                      <div className="flex flex-col items-center gap-3">
+                      <div className="flex flex-col items-center gap-3 relative">
+                        {coreAngle === 'objective' && (
+                          <div 
+                            className="absolute -top-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center z-10"
+                            style={{ backgroundColor: theme.palette.primary.main }}
+                          >
+                            <Check className="w-4 h-4" style={{ color: theme.palette.primary.contrastText }} />
+                          </div>
+                        )}
                         <div 
                           className="w-12 h-12 rounded-lg flex items-center justify-center"
                           style={{ backgroundColor: '#3B82F6' }}
@@ -378,14 +416,25 @@ const EmailGenerationConfigModal = ({
                       type="button"
                       onClick={() => !isLoading && setCoreAngle('desire')}
                       disabled={isLoading}
-                      className="p-4 rounded-lg transition-all text-center focus:outline-none focus:ring-2 disabled:opacity-50"
+                      className="p-4 rounded-lg transition-all text-center focus:outline-none disabled:opacity-50"
                       style={{
-                        backgroundColor: coreAngle === 'desire' ? theme.palette.primary.light : 'transparent',
+                        backgroundColor: coreAngle === 'desire' ? theme.palette.primary.light : theme.palette.background.paper,
                         borderColor: coreAngle === 'desire' ? theme.palette.primary.main : theme.palette.divider,
                         borderWidth: coreAngle === 'desire' ? '3px' : '1px',
                         borderStyle: 'solid',
-                        boxShadow: coreAngle === 'desire' ? `0 4px 12px ${theme.palette.primary.main}40` : 'none',
-                        transform: coreAngle === 'desire' ? 'scale(1.02)' : 'scale(1)'
+                        boxShadow: coreAngle === 'desire' ? `0 4px 16px ${theme.palette.primary.main}60, 0 0 0 2px ${theme.palette.primary.light}` : 'none',
+                        transform: coreAngle === 'desire' ? 'scale(1.03)' : 'scale(1)',
+                        outline: 'none'
+                      }}
+                      onFocus={(e) => {
+                        if (!isLoading && coreAngle !== 'desire') {
+                          e.currentTarget.style.boxShadow = `0 0 0 3px ${theme.palette.primary.light}80`;
+                        }
+                      }}
+                      onBlur={(e) => {
+                        if (coreAngle !== 'desire') {
+                          e.currentTarget.style.boxShadow = 'none';
+                        }
                       }}
                       onMouseEnter={(e) => {
                         if (!isLoading && coreAngle !== 'desire') {
@@ -394,11 +443,19 @@ const EmailGenerationConfigModal = ({
                       }}
                       onMouseLeave={(e) => {
                         if (!isLoading && coreAngle !== 'desire') {
-                          e.currentTarget.style.backgroundColor = 'transparent';
+                          e.currentTarget.style.backgroundColor = theme.palette.background.paper;
                         }
                       }}
                     >
-                      <div className="flex flex-col items-center gap-3">
+                      <div className="flex flex-col items-center gap-3 relative">
+                        {coreAngle === 'desire' && (
+                          <div 
+                            className="absolute -top-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center z-10"
+                            style={{ backgroundColor: theme.palette.primary.main }}
+                          >
+                            <Check className="w-4 h-4" style={{ color: theme.palette.primary.contrastText }} />
+                          </div>
+                        )}
                         <div 
                           className="w-12 h-12 rounded-lg flex items-center justify-center"
                           style={{ backgroundColor: '#10B981' }}
@@ -445,13 +502,24 @@ const EmailGenerationConfigModal = ({
                       type="button"
                       onClick={() => !isLoading && setIsDropdownOpen(!isDropdownOpen)}
                       disabled={isLoading}
-                      className="w-full px-4 py-3 rounded-md flex items-center justify-between focus:outline-none focus:ring-2 disabled:opacity-50"
+                      className="w-full px-4 py-3 rounded-md flex items-center justify-between focus:outline-none disabled:opacity-50"
                       style={{
                         borderColor: theme.palette.divider,
                         backgroundColor: theme.palette.background.default,
                         color: theme.palette.text.primary,
                         borderWidth: '1px',
-                        borderStyle: 'solid'
+                        borderStyle: 'solid',
+                        outline: 'none'
+                      }}
+                      onFocus={(e) => {
+                        if (!isLoading) {
+                          e.currentTarget.style.borderColor = theme.palette.primary.main;
+                          e.currentTarget.style.boxShadow = `0 0 0 3px ${theme.palette.primary.light}80`;
+                        }
+                      }}
+                      onBlur={(e) => {
+                        e.currentTarget.style.borderColor = theme.palette.divider;
+                        e.currentTarget.style.boxShadow = 'none';
                       }}
                       onMouseEnter={(e) => {
                         if (!isLoading) {
@@ -523,19 +591,29 @@ const EmailGenerationConfigModal = ({
               type="button"
               onClick={handleGenerate}
               disabled={isLoading || !offer.trim()}
-              className="w-full py-4 rounded-md text-base font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2"
+              className="w-full py-4 rounded-md text-base font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none"
               style={
                 isLoading || !offer.trim()
                   ? {
                       backgroundColor: theme.palette.divider,
                       color: theme.palette.text.disabled,
-                      cursor: 'not-allowed'
+                      cursor: 'not-allowed',
+                      outline: 'none'
                     }
                   : {
                       backgroundColor: theme.palette.primary.main,
-                      color: theme.palette.primary.contrastText
+                      color: theme.palette.primary.contrastText,
+                      outline: 'none'
                     }
               }
+              onFocus={(e) => {
+                if (!isLoading && offer.trim()) {
+                  e.currentTarget.style.boxShadow = `0 0 0 3px ${theme.palette.primary.light}80`;
+                }
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.boxShadow = 'none';
+              }}
               onMouseEnter={(e) => {
                 if (!isLoading && offer.trim()) {
                   e.currentTarget.style.backgroundColor = theme.palette.primary.dark;
@@ -570,4 +648,5 @@ const EmailGenerationConfigModal = ({
 };
 
 export default EmailGenerationConfigModal;
+
 

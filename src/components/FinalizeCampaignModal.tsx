@@ -206,7 +206,7 @@ const FinalizeModal = ({
               </div>
             </div>
             
-            <form onSubmit={handleSubmit}>
+            <form id="finalize-form" onSubmit={handleSubmit}>
               {/* Template Name */}
               <div className="mb-6">
                 <label 
@@ -358,8 +358,11 @@ const FinalizeModal = ({
               backgroundColor: theme.palette.background.paper,
               borderTopColor: theme.palette.divider,
               borderTopWidth: '1px',
-              borderTopStyle: 'solid'
+              borderTopStyle: 'solid',
+              position: 'relative',
+              zIndex: 10
             }}
+            onClick={(e) => e.stopPropagation()}
           >
             <button
               type="button"
@@ -394,7 +397,12 @@ const FinalizeModal = ({
             </button>
             <button
               type="button"
-              onClick={handleSubmit}
+              onClick={(e) => {
+                console.log('Button clicked', { isLoading, templateName, subject, content: content.substring(0, 50) });
+                e.preventDefault();
+                e.stopPropagation();
+                handleSubmit(e);
+              }}
               disabled={isLoading}
               className="px-6 py-2 rounded-md text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none"
               style={

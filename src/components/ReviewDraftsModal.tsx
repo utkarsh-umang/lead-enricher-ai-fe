@@ -248,8 +248,7 @@ const ReviewDraftsModal = ({
                           e.stopPropagation();
                           handleSelectDraft(draft.id);
                         }}
-                        disabled={isSelected}
-                        className="w-full px-4 py-2 rounded-md text-sm font-medium transition-colors disabled:opacity-50"
+                        className="w-full px-4 py-2 rounded-md text-sm font-medium transition-colors"
                         style={
                           isSelected
                             ? {
