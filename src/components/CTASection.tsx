@@ -1,7 +1,8 @@
 import { useNavigate } from 'react-router-dom';
-import { Brain, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { useTheme } from '../theme';
 import BackgroundImage from './BackgroundImage';
+import enleadBadge from '../assets/enlead_badge.png';
 
 const CTASection = () => {
   const navigate = useNavigate();
@@ -14,57 +15,50 @@ const CTASection = () => {
   return (
     <section className="relative min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 py-20">
       <BackgroundImage />
-      <div className="max-w-7xl mx-auto relative z-10 w-full">
+      <div className="max-w-4xl mx-auto relative z-10 w-full">
         <div className="text-center">
-          {/* Logo */}
-          <div className="flex justify-center mb-8">
-            <div 
-              className="p-4 rounded-2xl shadow-lg"
-              style={{ backgroundColor: theme.palette.primary.main }}
-            >
-              <Brain className="h-16 w-16" style={{ color: theme.palette.primary.contrastText }} />
-            </div>
-          </div>
-          
-          {/* Heading */}
-          <h1 
-            className="text-5xl md:text-6xl font-extrabold mb-6"
-            style={{ color: theme.palette.text.primary }}
-          >
-            Transform Your Lead Generation
-          </h1>
-          <p 
-            className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto"
-            style={{ color: theme.palette.text.secondary }}
-          >
-            Enrich your leads with AI-powered intelligence and automate your outreach campaigns
-          </p>
-          
-          {/* CTA Card */}
+          {/* Single CTA Card with all content */}
           <div 
-            className="max-w-md mx-auto mt-12 p-8 rounded-2xl shadow-xl border"
+            className="mx-auto p-8 md:p-12 rounded-2xl shadow-2xl"
             style={{
-              backgroundColor: theme.palette.background.paper,
-              borderColor: theme.palette.divider
+              background: 'linear-gradient(135deg, #ffffff 0%, #fafafa 100%)',
+              opacity: 0.9
             }}
           >
-            <h2 
-              className="text-2xl font-bold mb-4"
-              style={{ color: theme.palette.text.primary }}
-            >
-              Ready to get started?
-            </h2>
+            {/* Logo */}
+            <div className="flex justify-center mb-8">
+              <img 
+                src={enleadBadge} 
+                alt="EnLead Logo" 
+                className="h-24 w-auto"
+              />
+            </div>
+            
+            {/* Heading */}
             <p 
-              className="text-sm mb-6"
+              className="text-lg md:text-xl lg:text-2xl mb-8 max-w-3xl mx-auto"
               style={{ color: theme.palette.text.secondary }}
             >
-              Join thousands of businesses using EnLead AI to supercharge their lead generation
+              Enrich your leads with AI-powered intelligence!
+              <br />
+              Automate your outreach campaigns!
             </p>
+            
+            {/* Subheading */}
+            <p 
+              className="text-base md:text-lg mb-8 max-w-2xl mx-auto"
+              style={{ color: theme.palette.text.secondary }}
+            >
+              Supercharge your lead generation
+            </p>
+            
+            {/* CTA Button */}
             <button
               onClick={handleSignup}
-              className="w-full flex items-center justify-center gap-2 py-3 px-6 rounded-lg font-semibold text-white transition-all duration-200 shadow-md hover:shadow-lg"
+              className="mx-auto flex items-center justify-center gap-2 py-4 px-8 rounded-lg font-semibold text-white transition-all duration-200 shadow-md hover:shadow-lg"
               style={{
-                backgroundColor: theme.palette.primary.main
+                backgroundColor: theme.palette.primary.main,
+                color: theme.palette.primary.contrastText
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = theme.palette.primary.dark;
@@ -73,22 +67,8 @@ const CTASection = () => {
                 e.currentTarget.style.backgroundColor = theme.palette.primary.main;
               }}
             >
-              Sign up for free
-              <ArrowRight className="h-5 w-5" />
+              Let's Begin
             </button>
-            <p 
-              className="text-xs mt-4 text-center"
-              style={{ color: theme.palette.text.secondary }}
-            >
-              Already have an account?{' '}
-              <button
-                onClick={() => navigate('/login')}
-                className="font-medium hover:underline"
-                style={{ color: theme.palette.primary.main }}
-              >
-                Sign in
-              </button>
-            </p>
           </div>
         </div>
       </div>
