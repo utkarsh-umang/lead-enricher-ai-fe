@@ -15,6 +15,7 @@ import EmailGenerator from '../services/emailGenerator';
 import FinalizeModal from '../components/FinalizeCampaignModal';
 import AdvancedScrapingSettingsModal from '../components/AdvancedScrapingSettingsModal';
 import EmailGenerationConfigModal from '../components/EmailGenerationConfigModal';
+import ReviewDraftsModal from '../components/ReviewDraftsModal';
 import CampaignMetricsCards from '../components/CampaignMetricsCards';
 import CampaignLeadsTable from '../components/CampaignLeadsTable';
 import { useTheme } from '../theme';
@@ -164,12 +165,15 @@ const CampaignDetailsPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isScrapingModalOpen, setIsScrapingModalOpen] = useState(false);
   const [isEmailGenerationModalOpen, setIsEmailGenerationModalOpen] = useState(false);
+  const [isReviewDraftsModalOpen, setIsReviewDraftsModalOpen] = useState(false);
   const [isStartingScraping, setIsStartingScraping] = useState(false);
   const [isGeneratingEmails, setIsGeneratingEmails] = useState(false);
   const [viewMode, setViewMode] = useState<'overview' | 'template'>('overview');
   const [storedData, setStoredData] = useState<StoredCampaignData | null>(null);
   const [isEmailGenerationConfigured, setIsEmailGenerationConfigured] = useState(false);
   const [estimatedTimeLeft, setEstimatedTimeLeft] = useState<string | undefined>(undefined);
+  const [generatedDrafts, setGeneratedDrafts] = useState<any[]>([]);
+  const [selectedDraftForFinalize, setSelectedDraftForFinalize] = useState<any | null>(null);
 
   useEffect(() => {
     const loadCampaign = async () => {
@@ -408,19 +412,23 @@ const CampaignDetailsPage = () => {
     }
   };
 
-  const handleFinalizeCampaign = async (campaignName: string, templateName: string) => {
+  const handleFinalizeCampaign = async (campaignName: string, templateName: string, subject: string, content: string) => {
     if (!campaignData) return;
     
     setIsSaving(true);
     
     try {
+      // Use the subject and content from the finalize modal (which may have been edited)
+      const finalTemplateText = content;
+      const finalPreviewText = EmailGenerator.generatePreview(content);
+      
       // Call the finalize API
       const result = await CampaignService.finalizeCampaign(
         campaignData._id,
-        campaignName,
+        campaignData.campaign_name || campaignName, // Use existing campaign name or fallback
         templateName,
-        templateText,
-        previewText
+        finalTemplateText,
+        finalPreviewText
       );
       
       if (result.success) {
@@ -431,8 +439,14 @@ const CampaignDetailsPage = () => {
           campaign_name: result.campaign_name
         });
         
+        // Mark email generation as configured (this will show the estimated time box)
+        setIsEmailGenerationConfigured(true);
+        
         // Close modal
         setIsModalOpen(false);
+        
+        // Clear the selected draft
+        setSelectedDraftForFinalize(null);
         
         // Show success message
         setSaveSuccess(true);
@@ -563,15 +577,126 @@ const CampaignDetailsPage = () => {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 2000));
       
-      // After successful generation, mark as configured
-      setIsEmailGenerationConfigured(true);
+      // Generate the 5 email drafts
+      const drafts = [
+        {
+          id: 1,
+          name: 'Pain-Point Focus',
+          subject: 'Pain-Point Focus',
+          preview: `Hey {First Name}, {Personalisation}. I imagine getting that depth of content to your audience requires a significant investment of your time and energy. What if you could amplify the reach of that great work, ensuring it gets featured in major publications without the constant content grind? We specialize in doing exactly that, and to show you how, I'd like to create a Viral Style Video for you, at no charge. Open to a quick chat next week to explore the possibility?`,
+          content: `Hey {First Name},
+
+{Personalisation}. 
+
+I imagine getting that depth of content to your audience requires a significant investment of your time and energy.
+
+What if you could amplify the reach of that great work, ensuring it gets featured in major publications without the constant content grind?
+
+We specialize in doing exactly that, and to show you how, I'd like to create a Viral Style Video for you, at no charge.
+
+Open to a quick chat next week to explore the possibility?`
+        },
+        {
+          id: 2,
+          name: 'Solution-Oriented',
+          subject: 'Solution-Oriented | Data-Driven Approach',
+          preview: `Hey {First Name}, {Personalisation}. You're stuck in the content treadmill, recording and editing constantly just to stay in place, aren't you? We fix this grind by turning your existing work into guaranteed features in major publications. To show you the quality of content we create, I can make you a Viral Style Video at No Charge as a first step. Would it make sense to talk quickly?`,
+          content: `Hey {First Name},
+
+{Personalisation}. 
+
+You're stuck in the content treadmill, recording and editing constantly just to stay in place, aren't you? 
+
+We fix this grind by turning your existing work into guaranteed features in major publications. 
+
+To show you the quality of content we create, I can make you a Viral Style Video at No Charge as a first step. 
+
+Would it make sense to talk quickly?`
+        },
+        {
+          id: 3,
+          name: 'Direct Outreach',
+          subject: 'Direct Outreach - Lets Eliminate the Content Grind',
+          preview: `Hey {First Name}, {Personalisation}. Stop spending endless hours creating content that barely gets noticed. Instead, let us transform your best work into viral features that land in top publications—effortlessly. As proof, I'll create a Viral Style Video for you completely free. Interested in seeing how this works?`,
+          content: `Hey {First Name},
+
+{Personalisation}. 
+
+Stop spending endless hours creating content that barely gets noticed. 
+
+Instead, let us transform your best work into viral features that land in top publications—effortlessly. 
+
+As proof, I'll create a Viral Style Video for you completely free. 
+
+Interested in seeing how this works?`
+        },
+        {
+          id: 4,
+          name: 'Benefit-Driven',
+          subject: 'Benefit-Driven - More Reach, Less Work',
+          preview: `Hey {First Name}, {Personalisation}. Imagine your best content getting featured in major publications without you having to grind day after day. That's exactly what we do—we take your existing work and turn it into guaranteed features. I'd love to show you by creating a free Viral Style Video for your content. Worth a quick conversation?`,
+          content: `Hey {First Name},
+
+{Personalisation}. 
+
+Imagine your best content getting featured in major publications without you having to grind day after day. 
+
+That's exactly what we do—we take your existing work and turn it into guaranteed features. 
+
+I'd love to show you by creating a free Viral Style Video for your content. 
+
+Worth a quick conversation?`
+        },
+        {
+          id: 5,
+          name: 'Question-Based',
+          subject: 'Question-Based? What if Content Could Work for You?',
+          preview: `Hey {First Name}, {Personalisation}. What if you could get your content featured in major publications without the constant recording, editing, and posting cycle? We help creators break free from the content treadmill by turning their best work into viral publications. To demonstrate, I'll create a Viral Style Video for you at no cost. Open to exploring this?`,
+          content: `Hey {First Name},
+
+{Personalisation}. 
+
+What if you could get your content featured in major publications without the constant recording, editing, and posting cycle? 
+
+We help creators break free from the content treadmill by turning their best work into viral publications. 
+
+To demonstrate, I'll create a Viral Style Video for you at no cost. 
+
+Open to exploring this?`
+        }
+      ];
+      
+      setGeneratedDrafts(drafts);
+      
+      // Close the email generation modal and open the review drafts modal
       setIsEmailGenerationModalOpen(false);
+      setIsReviewDraftsModalOpen(true);
     } catch (error) {
       console.error('Error generating emails:', error);
       setError('Failed to generate emails. Please try again.');
     } finally {
       setIsGeneratingEmails(false);
     }
+  };
+
+  // Handle review drafts modal close
+  const handleCloseReviewDraftsModal = () => {
+    setIsReviewDraftsModalOpen(false);
+  };
+
+  // Handle back from review drafts to email generation
+  const handleBackToStrategy = () => {
+    setIsReviewDraftsModalOpen(false);
+    setIsEmailGenerationModalOpen(true);
+  };
+
+  // Handle continue from review drafts (selected draft)
+  const handleContinueFromReview = (selectedDraft: any) => {
+    console.log('Selected draft:', selectedDraft);
+    // Store the selected draft and open the finalize modal
+    setSelectedDraftForFinalize(selectedDraft);
+    setIsReviewDraftsModalOpen(false);
+    setIsModalOpen(true);
   };
 
   // Calculate estimated time when both scraping and email generation are configured
@@ -1096,7 +1221,8 @@ const CampaignDetailsPage = () => {
         onClose={handleCloseFinalizeModal}
         onFinalize={handleFinalizeCampaign}
         isLoading={isSaving}
-        defaultTemplateName={templateData?.name || ''}
+        defaultTemplateName={templateData?.name || selectedDraftForFinalize?.name || ''}
+        selectedDraft={selectedDraftForFinalize}
       />
 
       {/* Advanced Scraping Settings Modal */}
@@ -1111,6 +1237,13 @@ const CampaignDetailsPage = () => {
         onClose={handleCloseEmailGenerationModal}
         onGenerate={handleGenerateEmails}
         isLoading={isGeneratingEmails}
+      />
+      <ReviewDraftsModal
+        isOpen={isReviewDraftsModalOpen}
+        onClose={handleCloseReviewDraftsModal}
+        onBack={handleBackToStrategy}
+        onContinue={handleContinueFromReview}
+        drafts={generatedDrafts}
       />
     </div>
   );
