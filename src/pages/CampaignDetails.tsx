@@ -14,6 +14,7 @@ import EmailGenerator from '../services/emailGenerator';
 import FinalizeModal from '../components/FinalizeCampaignModal';
 import CampaignMetricsCards from '../components/CampaignMetricsCards';
 import CampaignLeadsTable from '../components/CampaignLeadsTable';
+import { useTheme } from '../theme';
 
 interface SheetData {
   id: string;
@@ -65,6 +66,7 @@ const mockLeads = [
 ];
 
 const CampaignDetailsPage = () => {
+  const { theme } = useTheme();
   const navigate = useNavigate();
   const { campaignId } = useParams<{ campaignId?: string }>();
   const [campaignData, setCampaignData] = useState<CampaignService.Campaign | null>(null);
@@ -447,7 +449,14 @@ const CampaignDetailsPage = () => {
       <div className="flex items-center mb-6">
         <button 
           onClick={() => navigate('/dashboard')}
-          className="flex items-center text-gray-600 hover:text-gray-900 mr-4"
+          className="flex items-center mr-4 transition-colors"
+          style={{ color: theme.palette.text.secondary }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.color = theme.palette.text.primary;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.color = theme.palette.text.secondary;
+          }}
         >
           <ArrowLeft className="h-5 w-5 mr-1" />
           Back to Dashboard
@@ -457,7 +466,7 @@ const CampaignDetailsPage = () => {
       {/* Loading state */}
       {isLoading && (
         <div className="flex items-center justify-center py-10">
-          <svg className="animate-spin h-8 w-8 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <svg className="animate-spin h-8 w-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" style={{ color: theme.palette.primary.main }}>
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
           </svg>
@@ -466,20 +475,50 @@ const CampaignDetailsPage = () => {
 
       {/* Error state */}
       {error && !isLoading && (
-        <div className="bg-red-50 border border-red-200 rounded-md p-4 mb-6">
+        <div 
+          className="rounded-md p-4 mb-6"
+          style={{
+            backgroundColor: `${theme.palette.error.main}15`,
+            borderColor: theme.palette.error.main,
+            borderWidth: '1px',
+            borderStyle: 'solid'
+          }}
+        >
           <div className="flex">
-            <AlertCircle className="h-5 w-5 text-red-400" />
-            <p className="ml-3 text-sm text-red-700">{error}</p>
+            <AlertCircle 
+              className="h-5 w-5" 
+              style={{ color: theme.palette.error.main }}
+            />
+            <p 
+              className="ml-3 text-sm"
+              style={{ color: theme.palette.error.main }}
+            >
+              {error}
+            </p>
           </div>
         </div>
       )}
 
       {/* Success message */}
       {saveSuccess && (
-        <div className="bg-green-50 border border-green-200 rounded-md p-4 mb-6">
+        <div 
+          className="rounded-md p-4 mb-6"
+          style={{
+            backgroundColor: `${theme.palette.success.main}15`,
+            borderColor: theme.palette.success.main,
+            borderWidth: '1px',
+            borderStyle: 'solid'
+          }}
+        >
           <div className="flex">
-            <CheckCircle2 className="h-5 w-5 text-green-500" />
-            <p className="ml-3 text-sm text-green-700">
+            <CheckCircle2 
+              className="h-5 w-5" 
+              style={{ color: theme.palette.success.main }}
+            />
+            <p 
+              className="ml-3 text-sm"
+              style={{ color: theme.palette.success.main }}
+            >
               {campaignData?.status === "running" 
                 ? "Campaign has been finalized and is now running." 
                 : "Template has been saved successfully."}
@@ -494,10 +533,19 @@ const CampaignDetailsPage = () => {
           {/* Campaign Title and Status */}
           <div className="mb-6">
             <div className="flex items-center justify-between mb-4">
-              <h1 className="text-2xl font-semibold text-gray-900">
+              <h1 
+                className="text-2xl font-semibold"
+                style={{ color: theme.palette.text.primary }}
+              >
                 Campaign: {getCampaignName()}
               </h1>
-              <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-medium">
+              <span 
+                className="px-3 py-1 rounded-full text-sm font-medium"
+                style={{
+                  backgroundColor: theme.palette.warning.main,
+                  color: theme.palette.text.primary
+                }}
+              >
                 {getCampaignStatus()}
               </span>
             </div>
@@ -531,21 +579,46 @@ const CampaignDetailsPage = () => {
           {/* Campaign status */}
           <div className="mb-6">
             <div className="flex items-center justify-between mb-2">
-              <h1 className="text-2xl font-semibold text-gray-900">
+              <h1 
+                className="text-2xl font-semibold"
+                style={{ color: theme.palette.text.primary }}
+              >
                 Campaign : {campaignData.campaign_name}
               </h1>
               
               {campaignData.status === "draft" ? (
                 <div className="flex"> 
-                  <h2 className="text-lg font-medium text-gray-900">Campaign Status -  </h2>
-                  <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-md text-sm">
+                  <h2 
+                    className="text-lg font-medium"
+                    style={{ color: theme.palette.text.primary }}
+                  >
+                    Campaign Status -  
+                  </h2>
+                  <span 
+                    className="px-3 py-1 rounded-md text-sm"
+                    style={{
+                      backgroundColor: theme.palette.warning.main,
+                      color: theme.palette.text.primary
+                    }}
+                  >
                     Draft
                   </span>
                 </div>
               ) : (
                 <div className="flex">
-                  <h2 className="text-lg font-medium text-gray-900">Campaign Status -  </h2>
-                  <span className="px-3 py-1 bg-green-100 text-green-800 rounded-md text-sm flex items-center">
+                  <h2 
+                    className="text-lg font-medium"
+                    style={{ color: theme.palette.text.primary }}
+                  >
+                    Campaign Status -  
+                  </h2>
+                  <span 
+                    className="px-3 py-1 rounded-md text-sm flex items-center"
+                    style={{
+                      backgroundColor: theme.palette.success.main,
+                      color: theme.palette.text.primary
+                    }}
+                  >
                     <PlayCircle className="h-4 w-4 mr-1" />
                     Running
                   </span>
@@ -553,22 +626,46 @@ const CampaignDetailsPage = () => {
               )}
             </div>
             
-            <div className="p-4 bg-gray-50 rounded-lg">
+            <div 
+              className="p-4 rounded-lg"
+              style={{ backgroundColor: theme.palette.background.paper }}
+            >
               <div className="flex items-center mb-2">
-                <MessageSquare className="h-5 w-5 text-indigo-600 mr-2" />
-                <span className="text-gray-700 font-medium">Sheet Information</span>
+                <MessageSquare 
+                  className="h-5 w-5 mr-2" 
+                  style={{ color: theme.palette.info.main }}
+                />
+                <span 
+                  className="font-medium"
+                  style={{ color: theme.palette.text.primary }}
+                >
+                  Sheet Information
+                </span>
               </div>
               <div className="ml-7">
-                <p className="text-gray-600 mb-1">
+                <p 
+                  className="mb-1"
+                  style={{ color: theme.palette.text.secondary }}
+                >
                   <span className="font-medium">Sheet:</span> {sheetData.title}
                 </p>
                 <div className="mt-3">
-                  <p className="text-gray-600 mb-2">
+                  <p 
+                    className="mb-2"
+                    style={{ color: theme.palette.text.secondary }}
+                  >
                     <span className="font-medium">Enrichment data that will be sent in outreach generation Prompt:</span>
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {sheetData.enrichmentColumns.map((column, index) => (
-                      <span key={index} className="px-2 py-1 bg-blue-50 text-blue-700 rounded-full text-xs">
+                      <span 
+                        key={index} 
+                        className="px-2 py-1 rounded-full text-xs"
+                        style={{
+                          backgroundColor: theme.palette.info.main,
+                          color: theme.palette.text.primary
+                        }}
+                      >
                         {column}
                       </span>
                     ))}
@@ -581,15 +678,39 @@ const CampaignDetailsPage = () => {
           {/* Template editor */}
           <div className="mb-6">
             <div className="flex items-center justify-between mb-2">
-              <h2 className="text-lg font-medium text-gray-900">Template Name  - {templateData.name}</h2>
+              <h2 
+                className="text-lg font-medium"
+                style={{ color: theme.palette.text.primary }}
+              >
+                Template Name  - {templateData.name}
+              </h2>
               
               {campaignData.status === "draft" && (
                 <button
                   onClick={handleSaveTemplate}
                   disabled={isSaving}
-                  className={`flex items-center px-3 py-1.5 ${
-                    isSaving ? "bg-indigo-400" : "bg-indigo-600 hover:bg-indigo-700"
-                  } text-white rounded-md text-sm transition-colors`}
+                  className="flex items-center px-3 py-1.5 rounded-md text-sm transition-colors"
+                  style={
+                    isSaving
+                      ? {
+                          backgroundColor: theme.palette.text.disabled,
+                          color: theme.palette.text.primary
+                        }
+                      : {
+                          backgroundColor: theme.palette.primary.main,
+                          color: theme.palette.primary.contrastText
+                        }
+                  }
+                  onMouseEnter={(e) => {
+                    if (!isSaving) {
+                      e.currentTarget.style.backgroundColor = theme.palette.primary.dark;
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isSaving) {
+                      e.currentTarget.style.backgroundColor = theme.palette.primary.main;
+                    }
+                  }}
                 >
                   <Save className="h-4 w-4 mr-1" />
                   {isSaving ? "Saving..." : "Save Template"}
@@ -598,31 +719,70 @@ const CampaignDetailsPage = () => {
             </div>
             
             <div className="mb-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label 
+                className="block text-sm font-medium mb-1"
+                style={{ color: theme.palette.text.secondary }}
+              >
                 Template Text {campaignData.status !== "draft" && "(View Only)"}
               </label>
               <textarea
                 value={templateText}
                 onChange={handleTemplateChange}
                 disabled={campaignData.status !== "draft"}
-                className={`w-full h-64 p-3 border ${
-                  campaignData.status === "draft" 
-                    ? "border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" 
-                    : "bg-gray-50 border-gray-200"
-                } rounded-md font-mono text-sm`}
+                className="w-full h-64 p-3 rounded-md font-mono text-sm"
+                style={
+                  campaignData.status === "draft"
+                    ? {
+                        borderColor: theme.palette.divider,
+                        backgroundColor: theme.palette.background.default,
+                        color: theme.palette.text.primary
+                      }
+                    : {
+                        backgroundColor: theme.palette.background.paper,
+                        borderColor: theme.palette.divider,
+                        color: theme.palette.text.disabled
+                      }
+                }
+                onFocus={(e) => {
+                  if (campaignData.status === "draft") {
+                    e.currentTarget.style.borderColor = theme.palette.primary.main;
+                    e.currentTarget.style.outline = `2px solid ${theme.palette.primary.main}40`;
+                  }
+                }}
+                onBlur={(e) => {
+                  if (campaignData.status === "draft") {
+                    e.currentTarget.style.borderColor = theme.palette.divider;
+                    e.currentTarget.style.outline = 'none';
+                  }
+                }}
               />
             </div>
             
             <div className="mb-4">
               <div className="flex items-center justify-between mb-1">
-                <label className="block text-sm font-medium text-gray-700">
+                <label 
+                  className="block text-sm font-medium"
+                  style={{ color: theme.palette.text.secondary }}
+                >
                   Preview
                 </label>
-                <span className="text-xs text-gray-500">
+                <span 
+                  className="text-xs"
+                  style={{ color: theme.palette.text.disabled }}
+                >
                   How your email might look when sent
                 </span>
               </div>
-              <div className="w-full h-64 p-3 bg-gray-50 border border-gray-200 rounded-md overflow-auto whitespace-pre-wrap text-sm">
+              <div 
+                className="w-full h-64 p-3 rounded-md overflow-auto whitespace-pre-wrap text-sm"
+                style={{
+                  backgroundColor: theme.palette.background.paper,
+                  borderColor: theme.palette.divider,
+                  borderWidth: '1px',
+                  borderStyle: 'solid',
+                  color: theme.palette.text.primary
+                }}
+              >
                 {previewText}
               </div>
             </div>
@@ -632,9 +792,28 @@ const CampaignDetailsPage = () => {
                 <button
                   onClick={handleOpenFinalizeModal}
                   disabled={isSaving}
-                  className={`flex items-center px-4 py-2 ${
-                    isSaving ? "bg-green-400" : "bg-green-600 hover:bg-green-700"
-                  } text-white rounded-md text-sm transition-colors`}
+                  className="flex items-center px-4 py-2 rounded-md text-sm transition-colors"
+                  style={
+                    isSaving
+                      ? {
+                          backgroundColor: theme.palette.text.disabled,
+                          color: theme.palette.text.primary
+                        }
+                      : {
+                          backgroundColor: theme.palette.success.main,
+                          color: theme.palette.text.primary
+                        }
+                  }
+                  onMouseEnter={(e) => {
+                    if (!isSaving) {
+                      e.currentTarget.style.opacity = '0.9';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isSaving) {
+                      e.currentTarget.style.opacity = '1';
+                    }
+                  }}
                 >
                   <PlayCircle className="h-5 w-5 mr-2" />
                   Finalize Template & Start Campaign
@@ -645,30 +824,100 @@ const CampaignDetailsPage = () => {
           
           {/* Campaign metrics (only shown for running campaigns) */}
           {campaignData.status === "running" && (
-            <div className="mt-8 border-t border-gray-200 pt-6">
-              <h2 className="text-lg font-medium text-gray-900 mb-4">Campaign Metrics (we can use instantly numbers directly here via integration)</h2>
+            <div 
+              className="mt-8 pt-6"
+              style={{
+                borderTopColor: theme.palette.divider,
+                borderTopWidth: '1px',
+                borderTopStyle: 'solid'
+              }}
+            >
+              <h2 
+                className="text-lg font-medium mb-4"
+                style={{ color: theme.palette.text.primary }}
+              >
+                Campaign Metrics (we can use instantly numbers directly here via integration)
+              </h2>
               
               <div className="grid grid-cols-4 gap-4">
-                <div className="bg-indigo-50 p-4 rounded-lg text-center">
-                  <div className="text-2xl font-bold text-indigo-700">0</div>
-                  <div className="text-sm text-indigo-600">Emails Sent</div>
+                <div 
+                  className="p-4 rounded-lg text-center"
+                  style={{ backgroundColor: theme.palette.primary.light }}
+                >
+                  <div 
+                    className="text-2xl font-bold"
+                    style={{ color: theme.palette.text.primary }}
+                  >
+                    0
+                  </div>
+                  <div 
+                    className="text-sm"
+                    style={{ color: theme.palette.text.secondary }}
+                  >
+                    Emails Sent
+                  </div>
                 </div>
-                <div className="bg-blue-50 p-4 rounded-lg text-center">
-                  <div className="text-2xl font-bold text-blue-700">0</div>
-                  <div className="text-sm text-blue-600">Opens</div>
+                <div 
+                  className="p-4 rounded-lg text-center"
+                  style={{ backgroundColor: `${theme.palette.info.main}20` }}
+                >
+                  <div 
+                    className="text-2xl font-bold"
+                    style={{ color: theme.palette.info.main }}
+                  >
+                    0
+                  </div>
+                  <div 
+                    className="text-sm"
+                    style={{ color: theme.palette.text.secondary }}
+                  >
+                    Opens
+                  </div>
                 </div>
-                <div className="bg-green-50 p-4 rounded-lg text-center">
-                  <div className="text-2xl font-bold text-green-700">0</div>
-                  <div className="text-sm text-green-600">Replies</div>
+                <div 
+                  className="p-4 rounded-lg text-center"
+                  style={{ backgroundColor: `${theme.palette.success.main}20` }}
+                >
+                  <div 
+                    className="text-2xl font-bold"
+                    style={{ color: theme.palette.success.main }}
+                  >
+                    0
+                  </div>
+                  <div 
+                    className="text-sm"
+                    style={{ color: theme.palette.text.secondary }}
+                  >
+                    Replies
+                  </div>
                 </div>
-                <div className="bg-red-50 p-4 rounded-lg text-center">
-                  <div className="text-2xl font-bold text-red-700">0</div>
-                  <div className="text-sm text-red-600">Bounces</div>
+                <div 
+                  className="p-4 rounded-lg text-center"
+                  style={{ backgroundColor: `${theme.palette.error.main}20` }}
+                >
+                  <div 
+                    className="text-2xl font-bold"
+                    style={{ color: theme.palette.error.main }}
+                  >
+                    0
+                  </div>
+                  <div 
+                    className="text-sm"
+                    style={{ color: theme.palette.text.secondary }}
+                  >
+                    Bounces
+                  </div>
                 </div>
               </div>
               
-              <div className="mt-6 p-4 bg-yellow-50 rounded-lg">
-                <p className="text-yellow-700 text-sm">
+              <div 
+                className="mt-6 p-4 rounded-lg"
+                style={{ backgroundColor: theme.palette.primary.light }}
+              >
+                <p 
+                  className="text-sm"
+                  style={{ color: theme.palette.text.primary }}
+                >
                   <strong>Note:</strong> Campaign metrics will update as emails are sent and responses are received.
                 </p>
               </div>
