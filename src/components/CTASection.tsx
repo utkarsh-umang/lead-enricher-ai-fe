@@ -1,5 +1,4 @@
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
 import { useTheme } from '../theme';
 import BackgroundImage from './BackgroundImage';
 import enleadBadge from '../assets/enlead_badge.png';
@@ -27,11 +26,13 @@ const CTASection = () => {
           >
             {/* Logo */}
             <div className="flex justify-center mb-8">
-              <img 
-                src={enleadBadge} 
-                alt="EnLead Logo" 
-                className="h-24 w-auto"
-              />
+              <div className="h-16 rounded-full overflow-hidden flex items-center justify-center">
+                <img 
+                  src={enleadBadge} 
+                  alt="EnLead Logo" 
+                  className="h-full w-full object-contain"
+                />
+              </div>
             </div>
             
             {/* Heading */}
