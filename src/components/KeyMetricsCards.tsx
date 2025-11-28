@@ -1,4 +1,4 @@
-import { TrendingUp, Mail } from 'lucide-react';
+import { TrendingUp, Mail, Download } from 'lucide-react';
 import { useTheme } from '../theme';
 
 const KeyMetricsCards = () => {
@@ -12,7 +12,7 @@ const KeyMetricsCards = () => {
           <h3 className="text-sm font-medium" style={{ color: theme.palette.text.secondary }}>
             Total Leads Uploaded
           </h3>
-          <TrendingUp className="w-4 h-4" style={{ color: theme.palette.success.main }} />
+          <TrendingUp className="w-6 h-6" style={{ color: theme.palette.primary.main }} />
         </div>
         <p className="text-3xl font-bold" style={{ color: theme.palette.text.primary }}>
           12,450
@@ -25,7 +25,7 @@ const KeyMetricsCards = () => {
           <h3 className="text-sm font-medium" style={{ color: theme.palette.text.secondary }}>
             Leads Scraped
           </h3>
-          <Mail className="w-4 h-4" style={{ color: theme.palette.text.secondary }} />
+          <Download className="w-6 h-6" style={{ color: theme.palette.primary.main }} />
         </div>
         <p className="text-3xl font-bold" style={{ color: theme.palette.text.primary }}>
           5,100
@@ -38,7 +38,7 @@ const KeyMetricsCards = () => {
           <h3 className="text-sm font-medium" style={{ color: theme.palette.text.secondary }}>
             Emails Generated
           </h3>
-          <Mail className="w-4 h-4" style={{ color: theme.palette.text.secondary }} />
+          <Mail className="w-6 h-6" style={{ color: theme.palette.primary.main }} />
         </div>
         <p className="text-3xl font-bold" style={{ color: theme.palette.text.primary }}>
           1,500
@@ -68,7 +68,7 @@ const KeyMetricsCards = () => {
                 cx="32"
                 cy="32"
                 r="28"
-                stroke={theme.palette.info.main}
+                stroke={theme.palette.primary.main}
                 strokeWidth="6"
                 fill="none"
                 strokeDasharray={`${2 * Math.PI * 28}`}
