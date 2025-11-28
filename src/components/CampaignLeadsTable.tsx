@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, Filter, Check, ChevronLeft, ChevronRight, ChevronsRight } from 'lucide-react';
+import { Search, Filter, ChevronLeft, ChevronRight, ChevronsRight } from 'lucide-react';
 
 interface Lead {
   id: string;
@@ -90,10 +90,6 @@ const CampaignLeadsTable = ({ leads, onViewEdit, onRetry }: CampaignLeadsTablePr
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-      {/* Header */}
-      <div className="p-6 border-b border-gray-200">
-        <h2 className="text-lg font-semibold text-gray-900">Campaign Leads</h2>
-      </div>
 
       {/* Search and Filter */}
       <div className="p-6 border-b border-gray-200 flex items-center justify-between gap-4">

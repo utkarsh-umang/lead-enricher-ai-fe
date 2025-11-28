@@ -79,6 +79,8 @@ const CampaignDetailsPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'overview' | 'template'>('overview');
   const [storedData, setStoredData] = useState<StoredCampaignData | null>(null);
+  const [isEmailGenerationConfigured, setIsEmailGenerationConfigured] = useState(false);
+  const [estimatedTimeLeft, setEstimatedTimeLeft] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     const loadCampaign = async () => {
@@ -386,24 +388,58 @@ const CampaignDetailsPage = () => {
 
   // Get metrics from stored data or calculate from leads
   const getMetrics = () => {
-    const totalLeads = storedData?.numberOfLeads || 500;
-    const readyLeads = Math.floor(totalLeads * 0.96); // 96% ready
-    const invalidLeads = totalLeads - readyLeads;
-    const scrapingProgress = storedData?.progress || 60;
-    const emailsGenerated = Math.floor(totalLeads * 0.5); // 50% emails generated
-    const openRate = 0;
-    const replies = 0;
+    const totalLeads = storedData?.numberOfLeads || 97;
+    const scrapingProgress = storedData?.progress || 0;
+    const isScrapingConfigured = scrapingProgress > 0;
 
     return {
       totalLeads,
-      readyLeads,
-      invalidLeads,
       scrapingProgress,
-      emailsGenerated,
-      openRate,
-      replies
+      isScrapingConfigured,
+      isEmailGenerationConfigured,
+      estimatedTimeLeft
     };
   };
+
+  // Handle configure scraping button click
+  const handleConfigureScraping = () => {
+    // TODO: Implement scraping configuration logic
+    console.log('Configure and Start Scraping clicked');
+    // This should open a modal or navigate to scraping configuration page
+    // For now, we'll just log it
+  };
+
+  // Handle configure email generation button click
+  const handleConfigureEmailGeneration = () => {
+    // TODO: Implement email generation configuration logic
+    console.log('Configure and Start Email Generation clicked');
+    // This should open a modal or navigate to email generation configuration page
+    // For now, we'll just log it
+    setIsEmailGenerationConfigured(true);
+  };
+
+  // Calculate estimated time when both scraping and email generation are configured
+  useEffect(() => {
+    const scrapingProgress = storedData?.progress || 0;
+    const isScrapingConfigured = scrapingProgress > 0;
+    
+    if (isScrapingConfigured && isEmailGenerationConfigured) {
+      // TODO: Replace with actual time calculation based on remaining work
+      // Example calculation based on total leads and progress
+      const totalLeads = storedData?.numberOfLeads || 97;
+      const remainingLeads = totalLeads * (1 - scrapingProgress / 100);
+      // Rough estimate: 1 minute per lead for scraping + email generation
+      const estimatedMinutes = Math.ceil(remainingLeads * 1);
+      const hours = Math.floor(estimatedMinutes / 60);
+      const minutes = estimatedMinutes % 60;
+      
+      if (hours > 0) {
+        setEstimatedTimeLeft(`${hours}h ${minutes}m`);
+      } else {
+        setEstimatedTimeLeft(`${minutes}m`);
+      }
+    }
+  }, [storedData?.progress, storedData?.numberOfLeads, isEmailGenerationConfigured]);
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -468,7 +504,11 @@ const CampaignDetailsPage = () => {
           </div>
 
           {/* Metrics Cards */}
-          <CampaignMetricsCards {...getMetrics()} />
+          <CampaignMetricsCards 
+            {...getMetrics()}
+            onConfigureScraping={handleConfigureScraping}
+            onConfigureEmailGeneration={handleConfigureEmailGeneration}
+          />
 
           {/* Campaign Leads Table */}
           <CampaignLeadsTable 
