@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Brain } from 'lucide-react';
 import { authService } from '../services/authService';
 import { useTheme } from '../theme';
+import enleadLogo from '../assets/enleaed_logo.png';
 
 interface NavbarProps {
   isLoggedIn?: boolean;
@@ -56,16 +56,22 @@ const Navbar = ({ isLoggedIn }: NavbarProps) => {
   return (
     <nav 
       className="shadow-md fixed top-0 right-0 left-0 z-10"
-      style={{ backgroundColor: theme.palette.background.default }}
+      style={{ 
+        backgroundColor: 'rgba(255, 255, 255, 0.5)',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)'
+      }}
     >
       <div className={`max-w-full mx-auto px-4 sm:px-6 lg:px-8 transition-all duration-300 ${hasSidebar ? 'lg:ml-64' : ''}`}>
         <div className="flex items-center justify-between h-16">
-          {/* Logo and title */}
+          {/* Logo */}
           <div className="flex items-center">
-            <Brain className="h-8 w-8" style={{ color: theme.palette.primary.main }} />
-            <span className="ml-2 text-xl font-semibold" style={{ color: theme.palette.text.primary }}>
-              EnLead AI
-            </span>
+            <img 
+              src={enleadLogo} 
+              alt="EnLead Logo" 
+              className="h-8 w-8 cursor-pointer hover:opacity-80 transition-opacity"
+              onClick={() => navigate('/')}
+            />
           </div>
           
           {/* Right side content */}
