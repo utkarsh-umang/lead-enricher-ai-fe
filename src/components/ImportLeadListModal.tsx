@@ -310,10 +310,20 @@ const ImportLeadListModal = ({
                         handleSelectFile();
                       }}
                       disabled={isLoading}
-                      className="px-4 py-2 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-4 py-2 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none"
                       style={{
                         backgroundColor: isLoading ? theme.palette.primary.light : theme.palette.primary.main,
-                        color: theme.palette.primary.contrastText
+                        color: theme.palette.primary.contrastText,
+                        border: 'none',
+                        outline: 'none'
+                      }}
+                      onFocus={(e) => {
+                        if (!isLoading) {
+                          e.currentTarget.style.boxShadow = `0 0 0 3px ${theme.palette.primary.light}40`;
+                        }
+                      }}
+                      onBlur={(e) => {
+                        e.currentTarget.style.boxShadow = 'none';
                       }}
                       onMouseEnter={(e) => {
                         if (!isLoading) {

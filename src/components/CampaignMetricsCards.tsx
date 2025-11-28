@@ -82,10 +82,12 @@ const CampaignMetricsCards = ({
           <div className="mt-4">
             <button
               onClick={onConfigureScraping}
-              className="w-full flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium transition-colors"
+              className="w-full flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium transition-colors outline-none focus:outline-none"
               style={{
                 backgroundColor: theme.palette.primary.main,
-                color: theme.palette.primary.contrastText
+                color: theme.palette.primary.contrastText,
+                border: 'none',
+                outline: 'none'
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = theme.palette.primary.dark;
@@ -148,17 +150,21 @@ const CampaignMetricsCards = ({
           <button
             onClick={onConfigureEmailGeneration}
             disabled={!isScrapingConfigured}
-            className="w-full flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium transition-colors"
+            className="w-full flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium transition-colors outline-none focus:outline-none"
             style={
               !isScrapingConfigured
                 ? {
                     backgroundColor: theme.palette.divider,
                     color: theme.palette.text.disabled,
-                    cursor: 'not-allowed'
+                    cursor: 'not-allowed',
+                    border: 'none',
+                    outline: 'none'
                   }
                 : {
                     backgroundColor: theme.palette.primary.main,
-                    color: theme.palette.primary.contrastText
+                    color: theme.palette.primary.contrastText,
+                    border: 'none',
+                    outline: 'none'
                   }
             }
             onMouseEnter={(e) => {

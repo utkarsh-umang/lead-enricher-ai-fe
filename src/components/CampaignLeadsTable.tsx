@@ -161,7 +161,20 @@ const CampaignLeadsTable = ({
                   {isScrapingStarted ? (
                     <button
                       onClick={() => onViewScrapingInfo?.(lead.id)}
-                      className="text-blue-600 hover:text-blue-900"
+                      className="px-4 py-2 rounded-lg text-sm font-medium transition-colors outline-none focus:outline-none"
+                      style={{
+                        backgroundColor: theme.palette.primary.main,
+                        color: theme.palette.primary.contrastText,
+                        border: 'none',
+                        outline: 'none',
+                        outlineOffset: '2px'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = theme.palette.primary.dark;
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = theme.palette.primary.main;
+                      }}
                     >
                       View
                     </button>
@@ -173,7 +186,20 @@ const CampaignLeadsTable = ({
                   {isEmailGenerationStarted ? (
                     <button
                       onClick={() => onViewGeneratedEmail?.(lead.id)}
-                      className="text-blue-600 hover:text-blue-900"
+                      className="px-4 py-2 rounded-lg text-sm font-medium transition-colors outline-none focus:outline-none"
+                      style={{
+                        backgroundColor: theme.palette.primary.main,
+                        color: theme.palette.primary.contrastText,
+                        border: 'none',
+                        outline: 'none',
+                        outlineOffset: '2px'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = theme.palette.primary.dark;
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = theme.palette.primary.main;
+                      }}
                     >
                       View
                     </button>
