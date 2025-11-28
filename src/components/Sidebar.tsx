@@ -141,7 +141,7 @@ const Sidebar = () => {
           mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}
         style={{ 
-          backgroundColor: theme.palette.primary.light
+          background: 'linear-gradient(180deg, #E8D5B7 0%, #D4AF37 50%, #B8860B 100%)'
         }}
       >
         {/* Sidebar header */}
@@ -167,13 +167,7 @@ const Sidebar = () => {
             )}
             style={{ 
               color: theme.palette.text.disabled,
-              backgroundColor: 'transparent'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = theme.palette.background.paper;
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'transparent';
+              backgroundColor: theme.palette.background.paper
             }}
             onFocus={(e) => {
               e.currentTarget.style.outline = 'none';
@@ -252,7 +246,15 @@ const Sidebar = () => {
                   backgroundColor: theme.palette.primary.main,
                   color: theme.palette.primary.contrastText
                 }}
-                onClick={() => setDropdownOpen(!dropdownOpen)}
+                onClick={() => {
+                  if (collapsed) {
+                    setCollapsed(false);
+                    // Small delay to ensure sidebar expands before opening dropdown
+                    setTimeout(() => setDropdownOpen(true), 100);
+                  } else {
+                    setDropdownOpen(!dropdownOpen);
+                  }
+                }}
               >
                 {getInitials(userName)}
               </div>
