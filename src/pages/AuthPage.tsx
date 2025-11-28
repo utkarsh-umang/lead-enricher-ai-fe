@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
-import { Lock, Mail, AlertCircle, Brain } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
+import { Lock, Mail, AlertCircle } from 'lucide-react';
 import { authService } from "../services/authService";
 import { useTheme } from "../theme";
 import BackgroundImage from "../components/BackgroundImage";
 
 const AuthPage = () => {
   const { theme } = useTheme();
+  const location = useLocation();
+  const isSignup = location.pathname === '/signup';
   
   // Form state
   const [email, setEmail] = useState('');
@@ -63,28 +66,6 @@ const AuthPage = () => {
     >
       <BackgroundImage />
       
-      {/* Logo at the top */}
-      <div className="mb-10 flex flex-col items-center relative z-10">
-        <div 
-          className="p-4 rounded-2xl shadow-lg"
-          style={{ backgroundColor: theme.palette.primary.main }}
-        >
-          <Brain className="h-12 w-12" style={{ color: theme.palette.primary.contrastText }} />
-        </div>
-        <h1 
-          className="mt-6 text-3xl font-bold drop-shadow-lg"
-          style={{ color: theme.palette.background.default }}
-        >
-          EnLead AI
-        </h1>
-        <p 
-          className="mt-2 text-sm font-medium"
-          style={{ color: theme.palette.background.default, opacity: 0.9 }}
-        >
-          Lead Enrichment Intelligence
-        </p>
-      </div>
-      
       <div 
         className="max-w-md w-full space-y-8 backdrop-blur-md p-10 rounded-2xl shadow-2xl relative z-10 border"
         style={{
@@ -97,13 +78,13 @@ const AuthPage = () => {
             className="text-3xl font-extrabold"
             style={{ color: theme.palette.text.primary }}
           >
-            Sign in to your account
+            {isSignup ? 'Create your account' : 'Sign in to your account'}
           </h2>
           <p 
             className="mt-2 text-sm"
             style={{ color: theme.palette.text.secondary }}
           >
-            Welcome back! Please enter your credentials.
+            {isSignup ? 'Get started with your free account today!' : 'Welcome back! Please enter your credentials.'}
           </p>
         </div>
         
@@ -211,43 +192,6 @@ const AuthPage = () => {
             </div>
           </div>
 
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <input
-                id="remember-me"
-                name="remember-me"
-                type="checkbox"
-                className="h-4 w-4 rounded border-gray-300 focus:ring-2 focus:ring-offset-0 transition-colors"
-                style={{
-                  accentColor: theme.palette.primary.main,
-                  borderColor: theme.palette.divider
-                }}
-              />
-              <label 
-                htmlFor="remember-me" 
-                className="ml-2 block text-sm font-medium"
-                style={{ color: theme.palette.text.primary }}
-              >
-                Remember me
-              </label>
-            </div>
-            <div className="text-sm">
-              <a 
-                href="#" 
-                className="font-medium hover:underline transition-colors"
-                style={{ color: theme.palette.primary.main }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = theme.palette.primary.dark;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = theme.palette.primary.main;
-                }}
-              >
-                Forgot password?
-              </a>
-            </div>
-          </div>
-
           <div>
             <button
               type="submit"
@@ -283,11 +227,54 @@ const AuthPage = () => {
                   <span style={{ color: theme.palette.primary.contrastText }}>Signing in...</span>
                 </>
               ) : (
-                'Sign in'
+                isSignup ? 'Sign up' : 'Sign in'
               )}
             </button>
           </div>
         </form>
+        
+        <div className="mt-6 text-center">
+          <p 
+            className="text-sm"
+            style={{ color: theme.palette.text.secondary }}
+          >
+            {isSignup ? (
+              <>
+                Already have an account?{' '}
+                <a 
+                  href="/login" 
+                  className="font-medium hover:underline transition-colors"
+                  style={{ color: theme.palette.primary.main }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = theme.palette.primary.dark;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = theme.palette.primary.main;
+                  }}
+                >
+                  Login
+                </a>
+              </>
+            ) : (
+              <>
+                Don't have an account?{' '}
+                <a 
+                  href="/signup" 
+                  className="font-medium hover:underline transition-colors"
+                  style={{ color: theme.palette.primary.main }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = theme.palette.primary.dark;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = theme.palette.primary.main;
+                  }}
+                >
+                  Signup
+                </a>
+              </>
+            )}
+          </p>
+        </div>
       </div>
     </div>
   );
