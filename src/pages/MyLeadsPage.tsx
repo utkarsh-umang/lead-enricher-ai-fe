@@ -64,12 +64,9 @@ const MyLeadsPage = () => {
       // TODO: Implement actual import logic here
       console.log('Importing file:', file.name, 'Source:', source, 'Campaign:', campaignName);
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Close modal after successful import
-      setIsImportModalOpen(false);
-      // You can add a success notification here
+      // Note: The modal will handle its own progress and completion UI
+      // Don't close the modal here - let it complete the 10s progress flow
+      // The modal will close when user clicks "Take me to campaign"
     } catch (error) {
       console.error('Error importing leads:', error);
       // You can add an error notification here
