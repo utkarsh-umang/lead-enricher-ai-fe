@@ -1,29 +1,12 @@
-import { useState, useEffect, useRef } from 'react';
-import { Bell, Plus, TrendingUp, Mail, Upload, HelpCircle, CheckCircle2, Loader2 } from 'lucide-react';
+import { useState } from 'react';
+import { Plus, Upload, HelpCircle, CheckCircle2, Loader2 } from 'lucide-react';
 import { useTheme } from '../theme';
+import NotificationButton from '../components/NotificationButton';
+import KeyMetricsCards from '../components/KeyMetricsCards';
 
 const DashboardPage = () => {
   const { theme } = useTheme();
-  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [isNewListImportClicked, setIsNewListImportClicked] = useState(false);
-  const notificationRef = useRef<HTMLDivElement>(null);
-
-  // Close popup when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
-        setIsNotificationOpen(false);
-      }
-    };
-
-    if (isNotificationOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isNotificationOpen]);
 
   // Sample data for batches
   const batches = [
@@ -149,48 +132,7 @@ const DashboardPage = () => {
           Dashboard
         </h1>
         <div className="flex items-center gap-4">
-          {/* Bell Icon with Notification Popup */}
-          <div className="relative" ref={notificationRef}>
-            <button 
-              className="p-2 rounded-lg transition-colors outline-none focus:outline-none"
-              style={{ 
-                color: theme.palette.text.secondary,
-                border: `1px solid ${isNotificationOpen ? theme.palette.primary.main : theme.palette.divider}`
-              }}
-              onClick={() => setIsNotificationOpen(!isNotificationOpen)}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = theme.palette.background.paper;
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
-              }}
-            >
-              <Bell className="w-5 h-5" style={{ color: theme.palette.text.secondary }} />
-            </button>
-            
-            {/* Notification Popup */}
-            {isNotificationOpen && (
-              <div 
-                className="absolute right-0 mt-2 w-80 rounded-lg shadow-lg border z-50"
-                style={{
-                  backgroundColor: theme.palette.background.default,
-                  borderColor: theme.palette.divider
-                }}
-              >
-                <div className="p-4 border-b" style={{ borderColor: theme.palette.divider }}>
-                  <h3 className="text-sm font-semibold" style={{ color: theme.palette.text.primary }}>
-                    Notifications
-                  </h3>
-                </div>
-                <div className="p-8 text-center">
-                  <Bell className="w-8 h-8 mx-auto mb-3" style={{ color: theme.palette.text.secondary, opacity: 0.5 }} />
-                  <p className="text-sm" style={{ color: theme.palette.text.secondary }}>
-                    No new notifications
-                  </p>
-                </div>
-              </div>
-            )}
-          </div>
+          <NotificationButton />
           
           {/* New List Import Button */}
           <button
@@ -215,77 +157,7 @@ const DashboardPage = () => {
         </div>
       </div>
 
-      {/* Key Metrics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        {/* Total Leads Enriched */}
-        <div className="rounded-lg shadow-sm border p-6" style={{ backgroundColor: theme.palette.background.default, borderColor: theme.palette.divider }}>
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium" style={{ color: theme.palette.text.secondary }}>
-              Total Leads Enriched
-            </h3>
-            <TrendingUp className="w-4 h-4" style={{ color: theme.palette.success.main }} />
-          </div>
-          <p className="text-3xl font-bold" style={{ color: theme.palette.text.primary }}>
-            12,450
-          </p>
-        </div>
-
-        {/* Emails Generated */}
-        <div className="rounded-lg shadow-sm border p-6" style={{ backgroundColor: theme.palette.background.default, borderColor: theme.palette.divider }}>
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium" style={{ color: theme.palette.text.secondary }}>
-              Emails Generated
-            </h3>
-            <Mail className="w-4 h-4" style={{ color: theme.palette.text.secondary }} />
-          </div>
-          <p className="text-3xl font-bold" style={{ color: theme.palette.text.primary }}>
-            45,100
-          </p>
-        </div>
-
-        {/* Credits Remaining */}
-        <div className="rounded-lg shadow-sm border p-6" style={{ backgroundColor: theme.palette.background.default, borderColor: theme.palette.divider }}>
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium" style={{ color: theme.palette.text.secondary }}>
-              Credits Remaining
-            </h3>
-          </div>
-          <div className="flex items-center gap-4">
-            {/* Circular Progress */}
-            <div className="relative w-16 h-16">
-              <svg className="transform -rotate-90 w-16 h-16">
-                <circle
-                  cx="32"
-                  cy="32"
-                  r="28"
-                  stroke={theme.palette.divider}
-                  strokeWidth="6"
-                  fill="none"
-                />
-                <circle
-                  cx="32"
-                  cy="32"
-                  r="28"
-                  stroke={theme.palette.info.main}
-                  strokeWidth="6"
-                  fill="none"
-                  strokeDasharray={`${2 * Math.PI * 28}`}
-                  strokeDashoffset={`${2 * Math.PI * 28 * (1 - 0.75)}`}
-                  strokeLinecap="round"
-                />
-              </svg>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-sm font-bold" style={{ color: theme.palette.text.primary }}>75%</span>
-              </div>
-            </div>
-            <div>
-              <p className="text-sm" style={{ color: theme.palette.text.secondary }}>
-                7,500 / 10,000
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <KeyMetricsCards />
 
       {/* Recent Batches & Activity Table */}
       <div className="rounded-lg shadow-sm border" style={{ backgroundColor: theme.palette.background.default, borderColor: theme.palette.divider }}>
