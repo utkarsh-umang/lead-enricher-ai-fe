@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Search, Filter, ChevronLeft, ChevronRight, ChevronsRight } from 'lucide-react';
+import { useTheme } from '../theme';
 
 interface Lead {
   id: string;
@@ -28,6 +29,7 @@ const CampaignLeadsTable = ({
   onViewScrapingInfo,
   onViewGeneratedEmail
 }: CampaignLeadsTableProps) => {
+  const { theme } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const leadsPerPage = 10;
@@ -60,10 +62,42 @@ const CampaignLeadsTable = ({
               setSearchQuery(e.target.value);
               setCurrentPage(1);
             }}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-all"
+            style={{
+              borderColor: theme.palette.divider,
+              backgroundColor: theme.palette.background.default
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = theme.palette.primary.main;
+              e.currentTarget.style.boxShadow = `0 0 0 2px ${theme.palette.primary.main}40`;
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = theme.palette.divider;
+              e.currentTarget.style.boxShadow = 'none';
+            }}
           />
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+        <button 
+          className="flex items-center gap-2 px-4 py-2 border rounded-lg transition-colors focus:outline-none focus:ring-2"
+          style={{
+            borderColor: theme.palette.divider,
+            backgroundColor: theme.palette.background.default
+          }}
+          onFocus={(e) => {
+            e.currentTarget.style.borderColor = theme.palette.primary.main;
+            e.currentTarget.style.boxShadow = `0 0 0 2px ${theme.palette.primary.main}40`;
+          }}
+          onBlur={(e) => {
+            e.currentTarget.style.borderColor = theme.palette.divider;
+            e.currentTarget.style.boxShadow = 'none';
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = theme.palette.background.paper;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = theme.palette.background.default;
+          }}
+        >
           <Filter className="h-5 w-5 text-gray-600" />
           <span className="text-sm font-medium text-gray-700">Filter</span>
         </button>

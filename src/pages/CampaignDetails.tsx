@@ -724,7 +724,7 @@ const CampaignDetailsPage = () => {
               <div className="flex items-center mb-2">
                 <MessageSquare 
                   className="h-5 w-5 mr-2" 
-                  style={{ color: theme.palette.info.main }}
+                  style={{ color: theme.palette.primary.main }}
                 />
                 <span 
                   className="font-medium"
@@ -753,8 +753,8 @@ const CampaignDetailsPage = () => {
                         key={index} 
                         className="px-2 py-1 rounded-full text-xs"
                         style={{
-                          backgroundColor: theme.palette.info.main,
-                          color: theme.palette.text.primary
+                          backgroundColor: theme.palette.primary.main,
+                          color: theme.palette.primary.contrastText
                         }}
                       >
                         {column}
@@ -950,11 +950,11 @@ const CampaignDetailsPage = () => {
                 </div>
                 <div 
                   className="p-4 rounded-lg text-center"
-                  style={{ backgroundColor: `${theme.palette.info.main}20` }}
+                  style={{ backgroundColor: theme.palette.primary.light }}
                 >
                   <div 
                     className="text-2xl font-bold"
-                    style={{ color: theme.palette.info.main }}
+                    style={{ color: theme.palette.primary.main }}
                   >
                     0
                   </div>

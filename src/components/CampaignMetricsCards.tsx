@@ -114,7 +114,7 @@ const CampaignMetricsCards = ({
                 className="h-2 rounded-full transition-all"
                 style={{ 
                   width: `${scrapingProgress}%`,
-                  backgroundColor: theme.palette.info.main
+                  backgroundColor: theme.palette.primary.main
                 }}
               ></div>
             </div>
@@ -197,8 +197,8 @@ const CampaignMetricsCards = ({
               Estimated Time Left
             </h3>
             <Clock 
-              className="h-5 w-5" 
-              style={{ color: theme.palette.text.secondary }}
+              className="h-6 w-6" 
+              style={{ color: theme.palette.primary.main }}
             />
           </div>
           <p 
