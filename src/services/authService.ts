@@ -67,6 +67,28 @@ export const authService = {
   },
   
   /**
+   * Login user with Google OAuth
+   */
+  loginWithGoogle: async (): Promise<AuthResponse> => {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // TODO: Implement actual Google OAuth flow
+    // For now, return a mock successful response
+    return {
+      status: 'success',
+      message: 'Login successful',
+      user: {
+        id: '1',
+        email: 'user@gmail.com',
+        name: 'Google User',
+        role: 'admin',
+        agency_id: '1'
+      }
+    };
+  },
+  
+  /**
    * Logout user by clearing session
    */
   logout: () => {
