@@ -156,8 +156,17 @@ const ImportLeadListModal = ({
   };
 
   const handleGoToCampaign = () => {
+    // Store campaign data in localStorage for the campaign details page
+    // This will be populated after import completes
+    const campaignData = {
+      campaignName: campaignName || 'New Campaign',
+      spreadsheetId: `import-${Date.now()}`, // Temporary ID until actual import completes
+      source: source,
+      isNewImport: true
+    };
+    localStorage.setItem('campaignData', JSON.stringify(campaignData));
     onClose();
-    navigate('/outreach-campaigns');
+    navigate('/campaign-details');
   };
 
   // Check if form is valid (all required fields filled)

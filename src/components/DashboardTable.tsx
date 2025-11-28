@@ -1,11 +1,13 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Upload, HelpCircle, CheckCircle2, Loader2 } from 'lucide-react';
 import { useTheme } from '../theme';
 import { batches, BatchStatusType } from '../data/batches';
 
 const DashboardTable = () => {
   const { theme } = useTheme();
-  const [selectedButtonId, setSelectedButtonId] = useState<number | null>(null);
+  const navigate = useNavigate();
+  const [selectedButtonId, _setSelectedButtonId] = useState<number | null>(null);
 
   const getStatusColor = (statusType: BatchStatusType) => {
     switch (statusType) {
@@ -209,7 +211,20 @@ const DashboardTable = () => {
                         : 'none',
                       outlineOffset: '2px'
                     }}
-                    onClick={() => setSelectedButtonId(selectedButtonId === batch.id ? null : batch.id)}
+                    onClick={() => {
+                      // Store campaign data in localStorage for the campaign details page
+                      const campaignData = {
+                        campaignName: batch.listName,
+                        spreadsheetId: `batch-${batch.id}`, // Using batch ID as identifier
+                        source: batch.source,
+                        numberOfLeads: batch.numberOfLeads,
+                        status: batch.status,
+                        statusType: batch.statusType,
+                        progress: batch.progress
+                      };
+                      localStorage.setItem('campaignData', JSON.stringify(campaignData));
+                      navigate('/campaign-details');
+                    }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.backgroundColor = theme.palette.primary.dark;
                     }}
