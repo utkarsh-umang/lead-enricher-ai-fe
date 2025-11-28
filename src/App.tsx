@@ -151,7 +151,7 @@ const App = () => {
             } 
           />
           <Route 
-            path="/campaign-details/:campaignId?" 
+            path="/dashboard/campaigndetails/:campaignId?" 
             element={
               <ProtectedRoute>
                 <CampaignDetailsPage />

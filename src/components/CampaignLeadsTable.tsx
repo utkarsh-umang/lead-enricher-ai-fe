@@ -25,13 +25,10 @@ const CampaignLeadsTable = ({
   leads, 
   isScrapingStarted = false,
   isEmailGenerationStarted = false,
-  onViewEdit, 
-  onRetry,
   onViewScrapingInfo,
   onViewGeneratedEmail
 }: CampaignLeadsTableProps) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
   const [currentPage, setCurrentPage] = useState(1);
   const leadsPerPage = 10;
 
@@ -47,25 +44,6 @@ const CampaignLeadsTable = ({
   const totalPages = Math.ceil(filteredLeads.length / leadsPerPage);
   const startIndex = (currentPage - 1) * leadsPerPage;
   const paginatedLeads = filteredLeads.slice(startIndex, startIndex + leadsPerPage);
-
-  const handleSelectAll = () => {
-    if (selectedLeads.size === paginatedLeads.length) {
-      setSelectedLeads(new Set());
-    } else {
-      setSelectedLeads(new Set(paginatedLeads.map(lead => lead.id)));
-    }
-  };
-
-  const handleSelectLead = (leadId: string) => {
-    const newSelected = new Set(selectedLeads);
-    if (newSelected.has(leadId)) {
-      newSelected.delete(leadId);
-    } else {
-      newSelected.add(leadId);
-    }
-    setSelectedLeads(newSelected);
-  };
-
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200">
@@ -93,53 +71,33 @@ const CampaignLeadsTable = ({
 
       {/* Table */}
       <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={selectedLeads.size === paginatedLeads.length && paginatedLeads.length > 0}
-                    onChange={handleSelectAll}
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                  />
-                </div>
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Lead Name
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Company
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Email
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Business Website
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Scraping Information
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Generated Email
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+        <div className="max-h-[43vh] overflow-y-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50 sticky top-0 z-10">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
+                  Lead Name
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
+                  Company
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
+                  Email
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
+                  Business Website
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
+                  Scraping Information
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
+                  Generated Email
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
             {paginatedLeads.map((lead) => (
               <tr key={lead.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <input
-                    type="checkbox"
-                    checked={selectedLeads.has(lead.id)}
-                    onChange={() => handleSelectLead(lead.id)}
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                  />
-                </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm font-medium text-gray-900">{lead.name}</div>
                 </td>
@@ -189,45 +147,11 @@ const CampaignLeadsTable = ({
                     <span className="text-gray-400">-</span>
                   )}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  {lead.scrapeStatus === 'Failed' ? (
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => onRetry?.(lead.id)}
-                        className="text-blue-600 hover:text-blue-900"
-                      >
-                        Retry
-                      </button>
-                      <span className="text-gray-300">|</span>
-                      <button
-                        onClick={() => onViewEdit?.(lead.id)}
-                        className="text-blue-600 hover:text-blue-900"
-                      >
-                        Edit
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => onViewEdit?.(lead.id)}
-                        className="text-blue-600 hover:text-blue-900"
-                      >
-                        View
-                      </button>
-                      <span className="text-gray-300">|</span>
-                      <button
-                        onClick={() => onViewEdit?.(lead.id)}
-                        className="text-blue-600 hover:text-blue-900"
-                      >
-                        Edit
-                      </button>
-                    </div>
-                  )}
-                </td>
               </tr>
             ))}
           </tbody>
-        </table>
+          </table>
+        </div>
       </div>
 
       {/* Pagination */}

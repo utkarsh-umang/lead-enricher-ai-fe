@@ -167,7 +167,7 @@ const ImportLeadListModal = ({
     };
     localStorage.setItem('campaignData', JSON.stringify(campaignData));
     onClose();
-    navigate(`/campaign-details/${tempId}`);
+    navigate(`/dashboard/campaigndetails/${tempId}`);
   };
 
   // Check if form is valid (all required fields filled)
