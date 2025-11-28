@@ -101,7 +101,7 @@ const DashboardTable = () => {
     <div className="rounded-lg shadow-sm border" style={{ backgroundColor: theme.palette.background.default, borderColor: theme.palette.divider }}>
       <div className="p-6 border-b" style={{ borderColor: theme.palette.divider }}>
         <h2 className="text-lg font-semibold" style={{ color: theme.palette.text.primary }}>
-          Campaigns
+          My Campaigns
         </h2>
       </div>
       
@@ -198,47 +198,27 @@ const DashboardTable = () => {
                   </div>
                 </td>
                 <td className="py-4 px-6">
-                  {batch.action && (
-                    <button
-                      className="px-4 py-2 rounded-lg text-sm font-medium transition-colors outline-none focus:outline-none"
-                      style={{
-                        ...(batch.actionType === 'primary'
-                          ? {
-                              backgroundColor: theme.palette.primary.main,
-                              color: theme.palette.primary.contrastText,
-                              border: 'none'
-                            }
-                          : {
-                              backgroundColor: theme.palette.background.default,
-                              color: theme.palette.text.primary,
-                              border: `1px solid ${theme.palette.divider}`
-                            }),
-                        outline: selectedButtonId === batch.id 
-                          ? `2px solid ${theme.palette.primary.main}` 
-                          : 'none',
-                        outlineOffset: '2px'
-                      }}
-                      onClick={() => setSelectedButtonId(selectedButtonId === batch.id ? null : batch.id)}
-                      onMouseEnter={(e) => {
-                        if (batch.actionType === 'primary') {
-                          e.currentTarget.style.backgroundColor = theme.palette.primary.dark;
-                        } else {
-                          e.currentTarget.style.backgroundColor = theme.palette.background.paper;
-                          e.currentTarget.style.borderColor = theme.palette.primary.main;
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        if (batch.actionType === 'primary') {
-                          e.currentTarget.style.backgroundColor = theme.palette.primary.main;
-                        } else {
-                          e.currentTarget.style.backgroundColor = theme.palette.background.default;
-                          e.currentTarget.style.borderColor = theme.palette.divider;
-                        }
-                      }}
-                    >
-                      {batch.action}
-                    </button>
-                  )}
+                  <button
+                    className="px-4 py-2 rounded-lg text-sm font-medium transition-colors outline-none focus:outline-none"
+                    style={{
+                      backgroundColor: theme.palette.primary.main,
+                      color: theme.palette.primary.contrastText,
+                      border: 'none',
+                      outline: selectedButtonId === batch.id 
+                        ? `2px solid ${theme.palette.primary.main}` 
+                        : 'none',
+                      outlineOffset: '2px'
+                    }}
+                    onClick={() => setSelectedButtonId(selectedButtonId === batch.id ? null : batch.id)}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = theme.palette.primary.dark;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = theme.palette.primary.main;
+                    }}
+                  >
+                    View Details
+                  </button>
                 </td>
               </tr>
             ))}
