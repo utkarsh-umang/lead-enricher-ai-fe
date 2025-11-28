@@ -55,6 +55,39 @@ export interface TemplateUpdateResponse {
 }
 
 /**
+ * Fetch a campaign by its ID
+ * @param campaignId - The campaign ID
+ * @returns Promise with campaign data
+ */
+export const fetchCampaignById = async (
+  campaignId: string
+): Promise<CampaignResponse> => {
+  if (!campaignId) {
+    throw new Error('Campaign ID is required');
+  }
+  
+  try {
+    const response = await fetch(`${API_BASE_URL}/outreach/campaign/${campaignId}`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json'
+      }
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || `API responded with status ${response.status}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching campaign by ID:', error);
+    throw error;
+  }
+};
+
+/**
  * Fetch or create a campaign for a sheet
  * @param sheetId - The Google Sheet ID
  * @param agencyId - The agency ID

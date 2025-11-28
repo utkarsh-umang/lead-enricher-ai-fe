@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { 
   ArrowLeft, 
   Save, 
@@ -66,6 +66,7 @@ const mockLeads = [
 
 const CampaignDetailsPage = () => {
   const navigate = useNavigate();
+  const { campaignId } = useParams<{ campaignId?: string }>();
   const [campaignData, setCampaignData] = useState<CampaignService.Campaign | null>(null);
   const [templateData, setTemplateData] = useState<CampaignService.Template | null>(null);
   const [sheetData, setSheetData] = useState<SheetData | null>(null);
@@ -80,36 +81,70 @@ const CampaignDetailsPage = () => {
   const [storedData, setStoredData] = useState<StoredCampaignData | null>(null);
 
   useEffect(() => {
-    // Get campaign data from localStorage
-    const stored = localStorage.getItem('campaignData');
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored) as StoredCampaignData;
-        setStoredData(parsed);
-        
-        // Determine view mode based on data
-        // If it's from dashboard/import (has campaignName but no sheet_id), show overview
-        // If it's from outreach campaigns (has spreadsheetId that's a real sheet), show template editor
-        if (parsed.isNewImport || parsed.campaignName || parsed.spreadsheetId?.startsWith('batch-') || parsed.spreadsheetId?.startsWith('import-')) {
-          setViewMode('overview');
-          setIsLoading(false);
-        } else if (parsed.spreadsheetId) {
-          // Try to load from API
-          loadCampaignData(parsed.spreadsheetId);
-        } else {
-          setError("No campaign data found");
+    const loadCampaign = async () => {
+      // Priority 1: If campaignId is in URL, fetch by campaign ID
+      if (campaignId && !campaignId.startsWith('batch-') && !campaignId.startsWith('import-')) {
+        try {
+          await loadCampaignById(campaignId);
+          return;
+        } catch (err) {
+          console.error("Error loading campaign by ID, falling back to localStorage:", err);
+          // Fall through to localStorage approach
+        }
+      }
+
+      // Priority 2: Get campaign data from localStorage (for backward compatibility)
+      const stored = localStorage.getItem('campaignData');
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored) as StoredCampaignData;
+          setStoredData(parsed);
+          
+          // If campaignId is in URL and matches stored data, or if no campaignId but we have stored data
+          if (campaignId && parsed.spreadsheetId && campaignId !== parsed.spreadsheetId) {
+            // URL campaignId doesn't match stored data, try to load by URL campaignId
+            try {
+              await loadCampaignById(campaignId);
+              return;
+            } catch (err) {
+              console.error("Error loading campaign by URL ID:", err);
+            }
+          }
+          
+          // Determine view mode based on data
+          // If it's from dashboard/import (has campaignName but no sheet_id), show overview
+          // If it's from outreach campaigns (has spreadsheetId that's a real sheet), show template editor
+          if (parsed.isNewImport || parsed.campaignName || parsed.spreadsheetId?.startsWith('batch-') || parsed.spreadsheetId?.startsWith('import-')) {
+            setViewMode('overview');
+            setIsLoading(false);
+          } else if (parsed.spreadsheetId) {
+            // Try to load from API using sheet ID
+            await loadCampaignData(parsed.spreadsheetId);
+          } else {
+            setError("No campaign data found");
+            setIsLoading(false);
+          }
+        } catch (err) {
+          console.error("Error parsing campaign data:", err);
+          setError("Invalid campaign data");
           setIsLoading(false);
         }
-      } catch (err) {
-        console.error("Error parsing campaign data:", err);
-        setError("Invalid campaign data");
+      } else if (campaignId) {
+        // We have a campaignId in URL but no localStorage data, try to load by ID
+        try {
+          await loadCampaignById(campaignId);
+        } catch (err) {
+          setError("Campaign not found");
+          setIsLoading(false);
+        }
+      } else {
+        setError("No campaign data found");
         setIsLoading(false);
       }
-    } else {
-      setError("No campaign data found");
-      setIsLoading(false);
-    }
-  }, []);
+    };
+
+    loadCampaign();
+  }, [campaignId]);
 
   // Update preview text whenever template text changes
   useEffect(() => {
@@ -117,6 +152,56 @@ const CampaignDetailsPage = () => {
       setPreviewText(EmailGenerator.generatePreview(templateText));
     }
   }, [templateText]);
+
+  const loadCampaignById = async (id: string) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      // Fetch campaign by ID
+      const campaignResponse = await CampaignService.fetchCampaignById(id);
+      setCampaignData(campaignResponse.campaign);
+      
+      // Get template for the campaign
+      const templateResponse = await CampaignService.getTemplatesByPrompt(campaignResponse.campaign.prompt_id);
+      
+      // Find the specific template for this campaign
+      const template = templateResponse.templates.find(
+        t => t._id === campaignResponse.campaign.template_id
+      );
+      
+      if (template) {
+        setTemplateData(template);
+        setTemplateText(template.template_text);
+        setPreviewText(template.example_template_output);
+      }
+      
+      // Get sheet details to populate sheet data
+      const sheetsResponse = await getAllSheets();
+      const sheetInfo = sheetsResponse.find(sheet => sheet.spreadsheetId === campaignResponse.campaign.sheet_id);
+      
+      if (sheetInfo) {
+        setSheetData({
+          id: campaignResponse.campaign.sheet_id,
+          title: sheetInfo.title,
+          enrichmentColumns: sheetInfo.enrichmentColumns || []
+        });
+      }
+      
+      // If campaign status is draft, show template editor, otherwise show overview
+      if (campaignResponse.campaign.status === 'draft') {
+        setViewMode('template');
+      } else {
+        setViewMode('overview');
+      }
+    } catch (err) {
+      console.error("Error loading campaign by ID:", err);
+      setError("Failed to load campaign data. Please try again later.");
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const loadCampaignData = async (sheetId: string) => {
     setIsLoading(true);

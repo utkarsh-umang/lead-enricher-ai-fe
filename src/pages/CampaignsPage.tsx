@@ -61,7 +61,8 @@ const OutreachCampaignsPage = () => {
     };
     
     localStorage.setItem('campaignData', JSON.stringify(outreachData));
-    navigate('/campaign-details');
+    // Use spreadsheetId as the identifier in the URL
+    navigate(`/campaign-details/${sheet.spreadsheetId}`);
   };
 
   const handleViewCampaign = (sheet: any) => {
@@ -75,8 +76,8 @@ const OutreachCampaignsPage = () => {
     
     localStorage.setItem('campaignData', JSON.stringify(campaignData));
     
-    // Navigate to the campaign details page (to be implemented)
-    navigate('/campaign-details');
+    // Use spreadsheetId as the identifier in the URL
+    navigate(`/campaign-details/${sheet.spreadsheetId}`);
   };
 
   // Get status badge based on sheet status

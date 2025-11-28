@@ -223,7 +223,7 @@ const DashboardTable = () => {
                         progress: batch.progress
                       };
                       localStorage.setItem('campaignData', JSON.stringify(campaignData));
-                      navigate('/campaign-details');
+                      navigate(`/campaign-details/batch-${batch.id}`);
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.backgroundColor = theme.palette.primary.dark;
