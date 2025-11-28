@@ -140,7 +140,9 @@ const Sidebar = () => {
           collapsed ? "w-20" : "w-64",
           mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}
-        style={{ backgroundColor: theme.palette.background.default }}
+        style={{ 
+          backgroundColor: theme.palette.primary.light
+        }}
       >
         {/* Sidebar header */}
         <div 
@@ -199,14 +201,14 @@ const Sidebar = () => {
                     onClick={() => handleNavigation(item.path, item.section)}
                     className="w-full flex items-center px-4 py-3 rounded-lg transition-colors border-0 outline-none focus:outline-none"
                     style={{
-                      backgroundColor: isActive ? theme.palette.primary.light : 'transparent',
+                      backgroundColor: isActive ? theme.palette.background.default : 'transparent',
                       color: isActive ? theme.palette.primary.dark : theme.palette.text.secondary,
                       border: 'none',
                       borderLeft: isActive ? `3px solid ${theme.palette.primary.main}` : '3px solid transparent'
                     }}
                     onMouseEnter={(e) => {
                       if (!isActive) {
-                        e.currentTarget.style.backgroundColor = theme.palette.background.paper;
+                        e.currentTarget.style.backgroundColor = theme.palette.background.default;
                       }
                     }}
                     onMouseLeave={(e) => {
