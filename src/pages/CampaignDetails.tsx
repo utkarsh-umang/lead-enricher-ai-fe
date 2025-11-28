@@ -14,6 +14,7 @@ import * as CampaignService from '../services/campaignService';
 import EmailGenerator from '../services/emailGenerator';
 import FinalizeModal from '../components/FinalizeCampaignModal';
 import AdvancedScrapingSettingsModal from '../components/AdvancedScrapingSettingsModal';
+import EmailGenerationConfigModal from '../components/EmailGenerationConfigModal';
 import CampaignMetricsCards from '../components/CampaignMetricsCards';
 import CampaignLeadsTable from '../components/CampaignLeadsTable';
 import { useTheme } from '../theme';
@@ -162,7 +163,9 @@ const CampaignDetailsPage = () => {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isScrapingModalOpen, setIsScrapingModalOpen] = useState(false);
+  const [isEmailGenerationModalOpen, setIsEmailGenerationModalOpen] = useState(false);
   const [isStartingScraping, setIsStartingScraping] = useState(false);
+  const [isGeneratingEmails, setIsGeneratingEmails] = useState(false);
   const [viewMode, setViewMode] = useState<'overview' | 'template'>('overview');
   const [storedData, setStoredData] = useState<StoredCampaignData | null>(null);
   const [isEmailGenerationConfigured, setIsEmailGenerationConfigured] = useState(false);
@@ -540,11 +543,35 @@ const CampaignDetailsPage = () => {
 
   // Handle configure email generation button click
   const handleConfigureEmailGeneration = () => {
-    // TODO: Implement email generation configuration logic
-    console.log('Configure and Start Email Generation clicked');
-    // This should open a modal or navigate to email generation configuration page
-    // For now, we'll just log it
-    setIsEmailGenerationConfigured(true);
+    setIsEmailGenerationModalOpen(true);
+  };
+
+  // Handle email generation modal close
+  const handleCloseEmailGenerationModal = () => {
+    if (!isGeneratingEmails) {
+      setIsEmailGenerationModalOpen(false);
+    }
+  };
+
+  // Handle email generation form submission
+  const handleGenerateEmails = async (offer: string, coreAngle: 'pain' | 'objective' | 'desire', toneOfVoice: string) => {
+    setIsGeneratingEmails(true);
+    try {
+      // TODO: Implement actual email generation API call
+      console.log('Generating emails with:', { offer, coreAngle, toneOfVoice });
+      
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // After successful generation, mark as configured
+      setIsEmailGenerationConfigured(true);
+      setIsEmailGenerationModalOpen(false);
+    } catch (error) {
+      console.error('Error generating emails:', error);
+      setError('Failed to generate emails. Please try again.');
+    } finally {
+      setIsGeneratingEmails(false);
+    }
   };
 
   // Calculate estimated time when both scraping and email generation are configured
@@ -1078,6 +1105,12 @@ const CampaignDetailsPage = () => {
         onClose={handleCloseScrapingModal}
         onStartScraping={handleStartScraping}
         isLoading={isStartingScraping}
+      />
+      <EmailGenerationConfigModal
+        isOpen={isEmailGenerationModalOpen}
+        onClose={handleCloseEmailGenerationModal}
+        onGenerate={handleGenerateEmails}
+        isLoading={isGeneratingEmails}
       />
     </div>
   );
