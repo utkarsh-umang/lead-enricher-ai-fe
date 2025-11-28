@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Upload } from 'lucide-react';
+import { useTheme } from '../theme';
 
 interface ImportLeadListModalProps {
   isOpen: boolean;
@@ -15,6 +16,7 @@ const ImportLeadListModal = ({
   onImport,
   isLoading = false
 }: ImportLeadListModalProps) => {
+  const { theme } = useTheme();
   const [source, setSource] = useState('');
   const [campaignName, setCampaignName] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -109,6 +111,9 @@ const ImportLeadListModal = ({
     }
   };
 
+  // Check if form is valid (all required fields filled)
+  const isFormValid = selectedFile !== null && source.trim() !== '' && campaignName.trim() !== '';
+
   if (!isOpen) return null;
 
   const modalContent = (
@@ -122,15 +127,29 @@ const ImportLeadListModal = ({
       
       <div className="flex items-center justify-center min-h-screen p-4 relative">
         {/* Modal panel */}
-        <div className="bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all w-full max-w-lg relative z-10">
-          <div className="bg-white px-6 pt-6 pb-4">
+        <div 
+          className="rounded-lg text-left overflow-hidden shadow-xl transform transition-all w-full max-w-lg relative z-10"
+          style={{ backgroundColor: theme.palette.background.default }}
+        >
+          <div className="px-6 pt-6 pb-4" style={{ backgroundColor: theme.palette.background.default }}>
             {/* Header */}
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-lg font-medium text-gray-900">Import New Lead List</h3>
+              <h3 className="text-lg font-medium" style={{ color: theme.palette.text.primary }}>Import New Lead List</h3>
               <button 
                 onClick={onClose}
                 disabled={isLoading}
-                className={`rounded-full p-1 ${isLoading ? 'text-gray-400' : 'text-gray-500 hover:bg-gray-100'}`}
+                className="rounded-full p-1 transition-colors"
+                style={{ 
+                  color: isLoading ? theme.palette.text.disabled : theme.palette.text.secondary
+                }}
+                onMouseEnter={(e) => {
+                  if (!isLoading) {
+                    e.currentTarget.style.backgroundColor = theme.palette.background.paper;
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }}
               >
                 <X className="h-5 w-5" />
               </button>
@@ -144,13 +163,29 @@ const ImportLeadListModal = ({
                   onDragLeave={handleDragLeave}
                   onDrop={handleDrop}
                   onClick={handleSelectFile}
-                  className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
-                    isDragging 
-                      ? 'border-indigo-500 bg-indigo-50' 
+                  className="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors"
+                  style={{
+                    borderColor: isDragging 
+                      ? theme.palette.primary.main 
                       : selectedFile 
-                        ? 'border-green-500 bg-green-50' 
-                        : 'border-gray-300 hover:border-gray-400'
-                  }`}
+                        ? theme.palette.success.main 
+                        : theme.palette.divider,
+                    backgroundColor: isDragging 
+                      ? theme.palette.primary.light 
+                      : selectedFile 
+                        ? `${theme.palette.success.main}15` 
+                        : 'transparent'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isDragging && !selectedFile) {
+                      e.currentTarget.style.borderColor = theme.palette.text.secondary;
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isDragging && !selectedFile) {
+                      e.currentTarget.style.borderColor = theme.palette.divider;
+                    }
+                  }}
                 >
                   <input
                     ref={fileInputRef}
@@ -161,8 +196,8 @@ const ImportLeadListModal = ({
                     disabled={isLoading}
                   />
                   <div className="flex flex-col items-center">
-                    <Upload className="h-12 w-12 text-gray-400 mb-4" />
-                    <p className="text-gray-600 mb-4">
+                    <Upload className="h-12 w-12 mb-4" style={{ color: theme.palette.text.disabled }} />
+                    <p className="mb-4" style={{ color: theme.palette.text.secondary }}>
                       {selectedFile 
                         ? selectedFile.name 
                         : 'Drag & Drop your CSV file here'}
@@ -174,20 +209,34 @@ const ImportLeadListModal = ({
                         handleSelectFile();
                       }}
                       disabled={isLoading}
-                      className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-4 py-2 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      style={{
+                        backgroundColor: isLoading ? theme.palette.primary.light : theme.palette.primary.main,
+                        color: theme.palette.primary.contrastText
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isLoading) {
+                          e.currentTarget.style.backgroundColor = theme.palette.primary.dark;
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isLoading) {
+                          e.currentTarget.style.backgroundColor = theme.palette.primary.main;
+                        }
+                      }}
                     >
                       or Select File
                     </button>
                   </div>
                 </div>
                 {errors.file && (
-                  <p className="mt-1 text-xs text-red-600">{errors.file}</p>
+                  <p className="mt-1 text-xs" style={{ color: theme.palette.error.main }}>{errors.file}</p>
                 )}
               </div>
 
               {/* Source Input */}
               <div className="mb-6">
-                <label htmlFor="source" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="source" className="block text-sm font-medium mb-1" style={{ color: theme.palette.text.primary }}>
                   Source
                 </label>
                 <input
@@ -200,19 +249,32 @@ const ImportLeadListModal = ({
                   }}
                   disabled={isLoading}
                   placeholder="Enter source"
-                  className={`w-full px-3 py-2 border ${errors.source ? 'border-red-300' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100`}
+                  className="w-full px-3 py-2 border rounded-md focus:outline-none disabled:opacity-50"
+                  style={{
+                    borderColor: errors.source ? theme.palette.error.main : theme.palette.divider,
+                    backgroundColor: isLoading ? theme.palette.background.paper : theme.palette.background.default,
+                    color: theme.palette.text.primary
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = theme.palette.primary.main;
+                    e.currentTarget.style.boxShadow = `0 0 0 3px ${theme.palette.primary.light}40`;
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = errors.source ? theme.palette.error.main : theme.palette.divider;
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}
                 />
-                <p className="mt-1 text-xs text-gray-500">
+                <p className="mt-1 text-xs" style={{ color: theme.palette.text.secondary }}>
                   Add a short description about the Source of these leads, this will be the identifier
                 </p>
                 {errors.source && (
-                  <p className="mt-1 text-xs text-red-600">{errors.source}</p>
+                  <p className="mt-1 text-xs" style={{ color: theme.palette.error.main }}>{errors.source}</p>
                 )}
               </div>
 
               {/* Campaign Name Input */}
               <div className="mb-6">
-                <label htmlFor="campaignName" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="campaignName" className="block text-sm font-medium mb-1" style={{ color: theme.palette.text.primary }}>
                   Campaign Name
                 </label>
                 <input
@@ -225,24 +287,49 @@ const ImportLeadListModal = ({
                   }}
                   disabled={isLoading}
                   placeholder="Give Campaign Name"
-                  className={`w-full px-3 py-2 border ${errors.campaignName ? 'border-red-300' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100`}
+                  className="w-full px-3 py-2 border rounded-md focus:outline-none disabled:opacity-50"
+                  style={{
+                    borderColor: errors.campaignName ? theme.palette.error.main : theme.palette.divider,
+                    backgroundColor: isLoading ? theme.palette.background.paper : theme.palette.background.default,
+                    color: theme.palette.text.primary
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = theme.palette.primary.main;
+                    e.currentTarget.style.boxShadow = `0 0 0 3px ${theme.palette.primary.light}40`;
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = errors.campaignName ? theme.palette.error.main : theme.palette.divider;
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}
                 />
                 {errors.campaignName && (
-                  <p className="mt-1 text-xs text-red-600">{errors.campaignName}</p>
+                  <p className="mt-1 text-xs" style={{ color: theme.palette.error.main }}>{errors.campaignName}</p>
                 )}
               </div>
             </form>
           </div>
           
           {/* Action Buttons */}
-          <div className="bg-gray-50 px-6 py-4 sm:flex sm:flex-row-reverse">
+          <div className="px-6 py-4 sm:flex sm:flex-row-reverse" style={{ backgroundColor: theme.palette.background.paper }}>
             <button
               type="button"
               onClick={handleSubmit}
-              disabled={isLoading}
-              className={`w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 ${
-                isLoading ? 'bg-indigo-400' : 'bg-indigo-600 hover:bg-indigo-700'
-              } text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed`}
+              disabled={isLoading || !isFormValid}
+              className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 text-base font-medium focus:outline-none sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              style={{
+                backgroundColor: (isLoading || !isFormValid) ? theme.palette.primary.light : theme.palette.primary.main,
+                color: theme.palette.primary.contrastText
+              }}
+              onMouseEnter={(e) => {
+                if (!isLoading && isFormValid) {
+                  e.currentTarget.style.backgroundColor = theme.palette.primary.dark;
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isLoading && isFormValid) {
+                  e.currentTarget.style.backgroundColor = theme.palette.primary.main;
+                }
+              }}
             >
               {isLoading ? 'Importing...' : 'Import Leads'}
             </button>
@@ -250,9 +337,22 @@ const ImportLeadListModal = ({
               type="button"
               onClick={onClose}
               disabled={isLoading}
-              className={`mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 ${
-                isLoading ? 'bg-gray-200 text-gray-400' : 'bg-white text-gray-700 hover:bg-gray-50'
-              } text-base font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm`}
+              className="mt-3 w-full inline-flex justify-center rounded-md border shadow-sm px-4 py-2 text-base font-medium focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition-colors"
+              style={{
+                borderColor: theme.palette.divider,
+                backgroundColor: isLoading ? theme.palette.background.paper : theme.palette.background.default,
+                color: isLoading ? theme.palette.text.disabled : theme.palette.text.primary
+              }}
+              onMouseEnter={(e) => {
+                if (!isLoading) {
+                  e.currentTarget.style.backgroundColor = theme.palette.background.paper;
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isLoading) {
+                  e.currentTarget.style.backgroundColor = theme.palette.background.default;
+                }
+              }}
             >
               Cancel
             </button>
