@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Brain, ArrowRight } from 'lucide-react';
 import { useTheme } from '../theme';
+import BackgroundImage from './BackgroundImage';
 
 const CTASection = () => {
   const navigate = useNavigate();
@@ -12,7 +13,8 @@ const CTASection = () => {
 
   return (
     <section className="relative py-20 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
+      <BackgroundImage />
+      <div className="max-w-7xl mx-auto relative z-10">
         <div className="text-center">
           {/* Logo */}
           <div className="flex justify-center mb-8">

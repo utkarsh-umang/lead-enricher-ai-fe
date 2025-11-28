@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Lock, Mail, AlertCircle, Brain } from 'lucide-react';
 import { authService } from "../services/authService";
 import { useTheme } from "../theme";
-import enleadBg from "../assets/enlead_bg.png";
+import BackgroundImage from "../components/BackgroundImage";
 
 const AuthPage = () => {
   const { theme } = useTheme();
@@ -61,23 +61,7 @@ const AuthPage = () => {
         fontFamily: "'Inter', sans-serif"
       }}
     >
-      {/* Background image with opacity */}
-      <div 
-        className="absolute inset-0"
-        style={{
-          backgroundImage: `url(${enleadBg})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-          opacity: 0.5
-        }}
-      ></div>
-      
-      {/* Background overlay for better readability */}
-      <div 
-        className="absolute inset-0"
-        style={{ backgroundColor: 'rgba(0, 0, 0, 0.25)' }}
-      ></div>
+      <BackgroundImage />
       
       {/* Logo at the top */}
       <div className="mb-10 flex flex-col items-center relative z-10">
@@ -271,8 +255,7 @@ const AuthPage = () => {
               className="group relative w-full flex justify-center py-3.5 px-4 border border-transparent text-sm font-semibold rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed"
               style={{
                 backgroundColor: isLoading ? theme.palette.primary.light : theme.palette.primary.main,
-                color: theme.palette.primary.contrastText,
-                focusRingColor: theme.palette.primary.main
+                color: theme.palette.primary.contrastText
               }}
               onMouseEnter={(e) => {
                 if (!isLoading) {
