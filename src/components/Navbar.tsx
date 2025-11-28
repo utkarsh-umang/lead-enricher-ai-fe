@@ -50,8 +50,10 @@ const Navbar = ({ isLoggedIn }: NavbarProps) => {
     authService.logout();
   };
 
-  // Determine if sidebar is present (logged in view)
-  const hasSidebar = isLoggedIn;
+  // Hide navbar when logged in (navigation handled by sidebar)
+  if (isLoggedIn) {
+    return null;
+  }
 
   return (
     <nav 
@@ -62,7 +64,7 @@ const Navbar = ({ isLoggedIn }: NavbarProps) => {
         WebkitBackdropFilter: 'blur(8px)'
       }}
     >
-      <div className={`max-w-full mx-auto px-4 sm:px-6 lg:px-8 transition-all duration-300 ${hasSidebar ? 'lg:ml-64' : ''}`}>
+      <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 transition-all duration-300">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex items-center">

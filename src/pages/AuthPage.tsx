@@ -23,8 +23,8 @@ const AuthPage = () => {
   // Check if already logged in
   useEffect(() => {
     if (authService.isLoggedIn()) {
-      // Redirect to home if already logged in
-      window.location.href = '/';
+      // Redirect to dashboard if already logged in
+      window.location.href = '/dashboard';
     }
   }, []);
 
@@ -55,8 +55,8 @@ const AuthPage = () => {
       if (response.status === 'success') {
         // Save user session
         authService.saveUserSession(response.user);
-        // Redirect to home page
-        window.location.href = '/';
+        // Redirect to dashboard
+        window.location.href = '/dashboard';
       }
     } catch (err: any) {
       setError(err.message || 'Invalid email or password');
@@ -75,8 +75,8 @@ const AuthPage = () => {
       if (response.status === 'success') {
         // Save user session
         authService.saveUserSession(response.user);
-        // Redirect to home page
-        window.location.href = '/';
+        // Redirect to dashboard
+        window.location.href = '/dashboard';
       }
     } catch (err: any) {
       setError(err.message || 'Google login failed');

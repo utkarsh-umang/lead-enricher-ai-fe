@@ -9,6 +9,7 @@ import OutreachCampaignsPage from './pages/CampaignsPage';
 import CampaignDetailsPage from './pages/CampaignDetails';
 import AuthPage from './pages/AuthPage';
 import LandingPage from './pages/LandingPage';
+import DashboardPage from './pages/DashboardPage';
 import DashboardLayout from './components/DashboardLayout';
 import LandingLayout from './components/LandingLayout';
 import { ThemeProvider } from './theme/ThemeContext';
@@ -49,11 +50,7 @@ const RootRoute = () => {
   const isAuthenticated = authService.isLoggedIn();
   
   if (isAuthenticated) {
-    return (
-      <DashboardLayout>
-        <ConnectedSheetsPage />
-      </DashboardLayout>
-    );
+    return <Navigate to="/dashboard" replace />;
   }
   
   return (
@@ -96,7 +93,7 @@ const App = () => {
             path="/dashboard" 
             element={
               <ProtectedRoute>
-                <ConnectedSheetsPage />
+                <DashboardPage />
               </ProtectedRoute>
             } 
           />
