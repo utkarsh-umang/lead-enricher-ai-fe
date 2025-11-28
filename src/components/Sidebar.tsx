@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { LayoutGrid, Menu, ChevronLeft, LogOut } from 'lucide-react';
 import { clsx } from 'clsx';
-import enleadBadge from '../assets/enlead_badge.png';
+// import enleadBadge from '../assets/enlead_badge.png';
 import { useTheme } from '../theme';
 import { authService } from '../services/authService';
 
@@ -150,12 +150,10 @@ const Sidebar = () => {
           style={{ borderColor: theme.palette.divider }}
         >
           {!collapsed && (
-            <div className='hidden lg:flex items-center'>
-              <img 
-                src={enleadBadge} 
-                alt="EnLead AI" 
-                className="h-10 w-auto object-contain"
-              />
+            <div className='hidden lg:flex '>
+              <h1 className="text-2xl font-bold" style={{ color: theme.palette.text.primary }}>
+                Enlead AI
+              </h1>
             </div>
           )}
           
@@ -233,7 +231,7 @@ const Sidebar = () => {
               {!collapsed && (
                 <div className="flex-1 min-w-0">
                   <p 
-                    className="text-sm font-medium truncate"
+                    className="text-lg font-medium truncate"
                     style={{ color: theme.palette.text.primary }}
                   >
                     {userName}

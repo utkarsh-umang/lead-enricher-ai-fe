@@ -1,6 +1,6 @@
 import { Upload, HelpCircle, CheckCircle2, Loader2 } from 'lucide-react';
 import { useTheme } from '../theme';
-import { batches, BatchStatusType, ActionType } from '../data/batches';
+import { batches, BatchStatusType } from '../data/batches';
 
 const DashboardTable = () => {
   const { theme } = useTheme();
