@@ -5,6 +5,7 @@ export interface Batch {
   id: number;
   listName: string;
   source: string;
+  numberOfLeads: number;
   sourceType: 'apollo' | 'linkedin' | 'upload' | 'unknown';
   dateImported: string;
   status: string;
@@ -19,6 +20,7 @@ export const batches: Batch[] = [
     id: 1,
     listName: 'SaaS Founders Q4',
     source: 'Apollo',
+    numberOfLeads: 4000,
     sourceType: 'apollo',
     dateImported: 'Oct 26',
     status: 'Scraping...',
@@ -30,6 +32,7 @@ export const batches: Batch[] = [
   {
     id: 2,
     listName: 'Local Agencies',
+    numberOfLeads: 3000,
     source: 'LinkedIn',
     sourceType: 'linkedin',
     dateImported: 'Oct 25',
@@ -42,6 +45,7 @@ export const batches: Batch[] = [
   {
     id: 3,
     listName: 'E-commerce Leads Nov',
+    numberOfLeads: 2000,
     source: 'Upload',
     sourceType: 'upload',
     dateImported: 'Oct 24',
@@ -55,9 +59,10 @@ export const batches: Batch[] = [
     id: 4,
     listName: 'Raw Marketing List',
     source: 'Unknown',
+    numberOfLeads: 3450,
     sourceType: 'unknown',
     dateImported: 'Today, 10:15 AM',
-    status: 'Processing Upload (Deduplicating)',
+    status: 'Processing Upload',
     statusType: 'processing',
     progress: 0,
     action: null,

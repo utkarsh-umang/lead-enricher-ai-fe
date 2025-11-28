@@ -101,7 +101,7 @@ const DashboardTable = () => {
     <div className="rounded-lg shadow-sm border" style={{ backgroundColor: theme.palette.background.default, borderColor: theme.palette.divider }}>
       <div className="p-6 border-b" style={{ borderColor: theme.palette.divider }}>
         <h2 className="text-lg font-semibold" style={{ color: theme.palette.text.primary }}>
-          Recent Batches & Activity
+          Campaigns
         </h2>
       </div>
       
@@ -110,13 +110,16 @@ const DashboardTable = () => {
           <thead>
             <tr className="border-b" style={{ borderColor: theme.palette.divider }}>
               <th className="text-left py-4 px-6 text-sm font-medium" style={{ color: theme.palette.text.secondary }}>
-                List Name
+                Campaign Name
               </th>
               <th className="text-left py-4 px-6 text-sm font-medium" style={{ color: theme.palette.text.secondary }}>
                 Source
               </th>
               <th className="text-left py-4 px-6 text-sm font-medium" style={{ color: theme.palette.text.secondary }}>
                 Date Imported
+              </th>
+              <th className="text-left py-4 px-6 text-sm font-medium" style={{ color: theme.palette.text.secondary }}>
+                Number of Leads
               </th>
               <th className="text-left py-4 px-6 text-sm font-medium" style={{ color: theme.palette.text.secondary }}>
                 Status & Progress
@@ -155,6 +158,11 @@ const DashboardTable = () => {
                 <td className="py-4 px-6">
                   <span className="text-sm" style={{ color: theme.palette.text.secondary }}>
                     {batch.dateImported}
+                  </span>
+                </td>
+                <td className="py-4 px-6">
+                  <span className="text-sm" style={{ color: theme.palette.text.secondary }}>
+                    {batch.numberOfLeads}
                   </span>
                 </td>
                 <td className="py-4 px-6">

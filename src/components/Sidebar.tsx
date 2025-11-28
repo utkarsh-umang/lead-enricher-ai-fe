@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { LayoutGrid, Menu, ChevronLeft, LogOut } from 'lucide-react';
+import { LayoutGrid, Menu, ChevronLeft, LogOut, Users } from 'lucide-react';
 import { clsx } from 'clsx';
 // import enleadBadge from '../assets/enlead_badge.png';
 import { useTheme } from '../theme';
@@ -31,6 +31,9 @@ const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
   const getActiveSection = (path: string) => {
     if (path === '/' || path.startsWith('/dashboard')) {
       return 'dashboard';
+    }
+    if (path.startsWith('/my-leads')) {
+      return 'my-leads';
     }
     return '';
   };
@@ -85,6 +88,12 @@ const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
       path: '/dashboard',
       icon: <LayoutGrid className="h-5 w-5" />,
       section: 'dashboard'
+    },
+    {
+      name: 'My Leads',
+      path: '/my-leads',
+      icon: <Users className="h-5 w-5" />,
+      section: 'my-leads'
     }
   ];
   

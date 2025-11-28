@@ -10,6 +10,7 @@ import CampaignDetailsPage from './pages/CampaignDetails';
 import AuthPage from './pages/AuthPage';
 import LandingPage from './pages/LandingPage';
 import DashboardPage from './pages/DashboardPage';
+import MyLeadsPage from './pages/MyLeadsPage';
 import DashboardLayout from './components/DashboardLayout';
 import LandingLayout from './components/LandingLayout';
 import { ThemeProvider } from './theme/ThemeContext';
@@ -94,6 +95,14 @@ const App = () => {
             element={
               <ProtectedRoute>
                 <DashboardPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/my-leads" 
+            element={
+              <ProtectedRoute>
+                <MyLeadsPage />
               </ProtectedRoute>
             } 
           />
