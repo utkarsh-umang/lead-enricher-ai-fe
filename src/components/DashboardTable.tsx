@@ -1,9 +1,11 @@
+import { useState } from 'react';
 import { Upload, HelpCircle, CheckCircle2, Loader2 } from 'lucide-react';
 import { useTheme } from '../theme';
 import { batches, BatchStatusType } from '../data/batches';
 
 const DashboardTable = () => {
   const { theme } = useTheme();
+  const [selectedButtonId, setSelectedButtonId] = useState<number | null>(null);
 
   const getStatusColor = (statusType: BatchStatusType) => {
     switch (statusType) {
@@ -45,8 +47,11 @@ const DashboardTable = () => {
       case 'apollo':
         return (
           <div 
-            className="w-5 h-5 rounded flex items-center justify-center text-white text-xs font-bold"
-            style={{ backgroundColor: theme.palette.info.main }}
+            className="w-5 h-5 rounded flex items-center justify-center text-xs font-bold"
+            style={{ 
+              backgroundColor: theme.palette.primary.main,
+              color: theme.palette.primary.contrastText
+            }}
           >
             A
           </div>
@@ -54,16 +59,39 @@ const DashboardTable = () => {
       case 'linkedin':
         return (
           <div 
-            className="w-5 h-5 rounded flex items-center justify-center text-white text-xs font-bold"
-            style={{ backgroundColor: theme.palette.info.main }}
+            className="w-5 h-5 rounded flex items-center justify-center text-xs font-bold"
+            style={{ 
+              backgroundColor: theme.palette.primary.main,
+              color: theme.palette.primary.contrastText
+            }}
           >
             in
           </div>
         );
       case 'upload':
-        return <Upload className="w-5 h-5" style={{ color: theme.palette.text.secondary }} />;
+        return (
+          <div 
+            className="w-5 h-5 rounded flex items-center justify-center"
+            style={{ 
+              backgroundColor: theme.palette.primary.main,
+              color: theme.palette.primary.contrastText
+            }}
+          >
+            <Upload className="w-3 h-3" style={{ color: theme.palette.primary.contrastText }} />
+          </div>
+        );
       case 'unknown':
-        return <HelpCircle className="w-5 h-5" style={{ color: theme.palette.text.secondary }} />;
+        return (
+          <div 
+            className="w-5 h-5 rounded flex items-center justify-center"
+            style={{ 
+              backgroundColor: theme.palette.primary.main,
+              color: theme.palette.primary.contrastText
+            }}
+          >
+            <HelpCircle className="w-3 h-3" style={{ color: theme.palette.primary.contrastText }} />
+          </div>
+        );
       default:
         return null;
     }
@@ -154,7 +182,7 @@ const DashboardTable = () => {
                           className="h-full rounded-full transition-all"
                           style={{
                             width: `${batch.progress}%`,
-                            backgroundColor: theme.palette.info.main
+                            backgroundColor: theme.palette.primary.main
                           }}
                         />
                       </div>
@@ -164,30 +192,39 @@ const DashboardTable = () => {
                 <td className="py-4 px-6">
                   {batch.action && (
                     <button
-                      className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                      style={
-                        batch.actionType === 'primary'
+                      className="px-4 py-2 rounded-lg text-sm font-medium transition-colors outline-none focus:outline-none"
+                      style={{
+                        ...(batch.actionType === 'primary'
                           ? {
-                              backgroundColor: theme.palette.info.main,
-                              color: '#FFFFFF'
+                              backgroundColor: theme.palette.primary.main,
+                              color: theme.palette.primary.contrastText,
+                              border: 'none'
                             }
                           : {
-                              backgroundColor: theme.palette.background.paper,
-                              color: theme.palette.text.primary
-                            }
-                      }
+                              backgroundColor: theme.palette.background.default,
+                              color: theme.palette.text.primary,
+                              border: `1px solid ${theme.palette.divider}`
+                            }),
+                        outline: selectedButtonId === batch.id 
+                          ? `2px solid ${theme.palette.primary.main}` 
+                          : 'none',
+                        outlineOffset: '2px'
+                      }}
+                      onClick={() => setSelectedButtonId(selectedButtonId === batch.id ? null : batch.id)}
                       onMouseEnter={(e) => {
                         if (batch.actionType === 'primary') {
-                          e.currentTarget.style.backgroundColor = '#0277BD';
+                          e.currentTarget.style.backgroundColor = theme.palette.primary.dark;
                         } else {
-                          e.currentTarget.style.backgroundColor = theme.palette.divider;
+                          e.currentTarget.style.backgroundColor = theme.palette.background.paper;
+                          e.currentTarget.style.borderColor = theme.palette.primary.main;
                         }
                       }}
                       onMouseLeave={(e) => {
                         if (batch.actionType === 'primary') {
-                          e.currentTarget.style.backgroundColor = theme.palette.info.main;
+                          e.currentTarget.style.backgroundColor = theme.palette.primary.main;
                         } else {
-                          e.currentTarget.style.backgroundColor = theme.palette.background.paper;
+                          e.currentTarget.style.backgroundColor = theme.palette.background.default;
+                          e.currentTarget.style.borderColor = theme.palette.divider;
                         }
                       }}
                     >
