@@ -44,8 +44,8 @@ const CampaignMetricsCards = ({
             Total Leads
           </h3>
           <Users 
-            className="h-5 w-5" 
-            style={{ color: theme.palette.text.secondary }}
+            className="h-6 w-6" 
+            style={{ color: theme.palette.primary.main }}
           />
         </div>
         <p 
@@ -74,8 +74,8 @@ const CampaignMetricsCards = ({
             Scraping Progress
           </h3>
           <Search 
-            className="h-5 w-5" 
-            style={{ color: theme.palette.text.secondary }}
+            className="h-6 w-6" 
+            style={{ color: theme.palette.primary.main }}
           />
         </div>
         {scrapingProgress === 0 ? (
@@ -140,8 +140,8 @@ const CampaignMetricsCards = ({
             Email Generation
           </h3>
           <Mail 
-            className="h-5 w-5" 
-            style={{ color: theme.palette.text.secondary }}
+            className="h-6 w-6" 
+            style={{ color: theme.palette.primary.main }}
           />
         </div>
         <div className="mt-4">

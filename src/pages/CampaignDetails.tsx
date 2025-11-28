@@ -44,6 +44,7 @@ const mockLeads = [
     name: 'John Doe',
     company: 'Acme Corp',
     email: 'john@acme.com',
+    businessWebsite: 'https://www.acmecorp.com',
     scrapeStatus: 'Success' as const,
     emailStatus: 'Drafted' as const
   },
@@ -52,6 +53,7 @@ const mockLeads = [
     name: 'Jane Smith',
     company: 'Beta Industries',
     email: 'jane@beta.com',
+    businessWebsite: 'https://www.betaindustries.com',
     scrapeStatus: 'Pending' as const,
     emailStatus: null
   },
@@ -60,6 +62,7 @@ const mockLeads = [
     name: 'Bob Johnson',
     company: 'Gamma Tech',
     email: 'bob@gamma.com',
+    businessWebsite: 'https://www.gammatech.com',
     scrapeStatus: 'Failed' as const,
     emailStatus: null
   }
@@ -561,6 +564,8 @@ const CampaignDetailsPage = () => {
           {/* Campaign Leads Table */}
           <CampaignLeadsTable 
             leads={mockLeads}
+            isScrapingStarted={getMetrics().isScrapingConfigured}
+            isEmailGenerationStarted={isEmailGenerationConfigured}
             onViewEdit={(leadId) => {
               console.log('View/Edit lead:', leadId);
               // TODO: Implement view/edit functionality
@@ -568,6 +573,14 @@ const CampaignDetailsPage = () => {
             onRetry={(leadId) => {
               console.log('Retry lead:', leadId);
               // TODO: Implement retry functionality
+            }}
+            onViewScrapingInfo={(leadId) => {
+              console.log('View scraping info for lead:', leadId);
+              // TODO: Implement view scraping info functionality
+            }}
+            onViewGeneratedEmail={(leadId) => {
+              console.log('View generated email for lead:', leadId);
+              // TODO: Implement view generated email functionality
             }}
           />
         </>
