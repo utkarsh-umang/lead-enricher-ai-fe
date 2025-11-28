@@ -3,6 +3,7 @@ import { Search, ChevronDown, Plus } from 'lucide-react';
 import { useTheme } from '../theme';
 import NotificationButton from '../components/NotificationButton';
 import MyLeadsTable from '../components/MyLeadsTable';
+import ImportLeadListModal from '../components/ImportLeadListModal';
 import { getLeadsSortedByRecent } from '../data/leads';
 
 const MyLeadsPage = () => {
@@ -10,6 +11,8 @@ const MyLeadsPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedLeads, setSelectedLeads] = useState<Set<number>>(new Set());
   const [currentPage, setCurrentPage] = useState(1);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
   const itemsPerPage = 50;
 
   // Get sorted leads (most recent first)
@@ -55,6 +58,26 @@ const MyLeadsPage = () => {
     }
   };
 
+  const handleImport = async (file: File, source: string, campaignName: string) => {
+    setIsImporting(true);
+    try {
+      // TODO: Implement actual import logic here
+      console.log('Importing file:', file.name, 'Source:', source, 'Campaign:', campaignName);
+      
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Close modal after successful import
+      setIsImportModalOpen(false);
+      // You can add a success notification here
+    } catch (error) {
+      console.error('Error importing leads:', error);
+      // You can add an error notification here
+    } finally {
+      setIsImporting(false);
+    }
+  };
+
   return (
     <div className="p-6">
       {/* Top Bar */}
@@ -67,6 +90,7 @@ const MyLeadsPage = () => {
           
           {/* New List Import Button */}
           <button
+            onClick={() => setIsImportModalOpen(true)}
             className="px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 outline-none focus:outline-none"
             style={{
               backgroundColor: theme.palette.primary.main,
@@ -143,6 +167,14 @@ const MyLeadsPage = () => {
         totalLeads={filteredLeads.length}
         itemsPerPage={itemsPerPage}
         onPageChange={setCurrentPage}
+      />
+
+      {/* Import Lead List Modal */}
+      <ImportLeadListModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        onImport={handleImport}
+        isLoading={isImporting}
       />
     </div>
   );
