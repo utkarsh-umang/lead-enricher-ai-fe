@@ -57,7 +57,7 @@ const Navbar = ({ isLoggedIn }: NavbarProps) => {
     <nav 
       className="shadow-md fixed top-0 right-0 left-0 z-10"
       style={{ 
-        backgroundColor: 'rgba(255, 255, 255, 0.5)',
+        backgroundColor: 'rgba(255, 255, 255, 0.25)',
         backdropFilter: 'blur(8px)',
         WebkitBackdropFilter: 'blur(8px)'
       }}
