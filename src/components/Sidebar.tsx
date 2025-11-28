@@ -13,11 +13,15 @@ type NavItem = {
   section: string;
 };
 
-const Sidebar = () => {
+interface SidebarProps {
+  collapsed: boolean;
+  setCollapsed: (collapsed: boolean) => void;
+}
+
+const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { theme } = useTheme();
-  const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userName, setUserName] = useState('');
   const [dropdownOpen, setDropdownOpen] = useState(false);
