@@ -34,6 +34,7 @@ interface StoredCampaignData {
   status?: string;
   statusType?: string;
   progress?: number;
+  emailGenerationProgress?: number;
   isNewImport?: boolean;
   sheetTitle?: string;
   sheetUrl?: string;
@@ -171,6 +172,7 @@ const CampaignDetailsPage = () => {
   const [viewMode, setViewMode] = useState<'overview' | 'template'>('overview');
   const [storedData, setStoredData] = useState<StoredCampaignData | null>(null);
   const [isEmailGenerationConfigured, setIsEmailGenerationConfigured] = useState(false);
+  const [emailGenerationProgress, setEmailGenerationProgress] = useState(0);
   const [estimatedTimeLeft, setEstimatedTimeLeft] = useState<string | undefined>(undefined);
   const [generatedDrafts, setGeneratedDrafts] = useState<any[]>([]);
   const [selectedDraftForFinalize, setSelectedDraftForFinalize] = useState<any | null>(null);
@@ -194,6 +196,11 @@ const CampaignDetailsPage = () => {
         try {
           const parsed = JSON.parse(stored) as StoredCampaignData;
           setStoredData(parsed);
+          // Initialize email generation progress from stored data
+          if (parsed.emailGenerationProgress !== undefined) {
+            setEmailGenerationProgress(parsed.emailGenerationProgress);
+            setIsEmailGenerationConfigured(parsed.emailGenerationProgress > 0);
+          }
           
           // If campaignId is in URL and matches stored data, or if no campaignId but we have stored data
           if (campaignId && parsed.spreadsheetId && campaignId !== parsed.spreadsheetId) {
@@ -439,8 +446,21 @@ const CampaignDetailsPage = () => {
           campaign_name: result.campaign_name
         });
         
-        // Mark email generation as configured (this will show the estimated time box)
+        // Mark email generation as configured and start progress
         setIsEmailGenerationConfigured(true);
+        setEmailGenerationProgress(1); // Start with 1% progress
+        
+        // Update stored data with email generation progress
+        const stored = localStorage.getItem('campaignData');
+        if (stored) {
+          const parsed = JSON.parse(stored) as StoredCampaignData;
+          const updatedStoredData = {
+            ...parsed,
+            emailGenerationProgress: 1
+          };
+          setStoredData(updatedStoredData);
+          localStorage.setItem('campaignData', JSON.stringify(updatedStoredData));
+        }
         
         // Close modal
         setIsModalOpen(false);
@@ -458,7 +478,6 @@ const CampaignDetailsPage = () => {
         setViewMode('overview');
         
         // Reload the page data
-        const stored = localStorage.getItem('campaignData');
         if (stored) {
           const parsed = JSON.parse(stored) as StoredCampaignData;
           if (parsed.spreadsheetId && !parsed.spreadsheetId.startsWith('batch-') && !parsed.spreadsheetId.startsWith('import-')) {
@@ -494,12 +513,14 @@ const CampaignDetailsPage = () => {
     const totalLeads = storedData?.numberOfLeads || 97;
     const scrapingProgress = storedData?.progress || 0;
     const isScrapingConfigured = scrapingProgress > 0;
+    const currentEmailProgress = storedData?.emailGenerationProgress ?? emailGenerationProgress;
 
     return {
       totalLeads,
       scrapingProgress,
       isScrapingConfigured,
       isEmailGenerationConfigured,
+      emailGenerationProgress: currentEmailProgress,
       estimatedTimeLeft
     };
   };
@@ -721,6 +742,42 @@ Open to exploring this?`
       }
     }
   }, [storedData?.progress, storedData?.numberOfLeads, isEmailGenerationConfigured]);
+
+  // Simulate email generation progress
+  useEffect(() => {
+    if (!isEmailGenerationConfigured || emailGenerationProgress >= 100) {
+      return;
+    }
+
+    const interval = setInterval(() => {
+      setEmailGenerationProgress((prev) => {
+        if (prev >= 100) {
+          clearInterval(interval);
+          return 100;
+        }
+        
+        // Increment progress by 1-3% randomly, but slow down as we approach 100%
+        const increment = prev > 90 ? 0.5 : prev > 70 ? 1 : Math.random() * 2 + 1;
+        const newProgress = Math.min(prev + increment, 100);
+        
+        // Update stored data
+        const stored = localStorage.getItem('campaignData');
+        if (stored) {
+          const parsed = JSON.parse(stored) as StoredCampaignData;
+          const updatedStoredData = {
+            ...parsed,
+            emailGenerationProgress: newProgress
+          };
+          setStoredData(updatedStoredData);
+          localStorage.setItem('campaignData', JSON.stringify(updatedStoredData));
+        }
+        
+        return newProgress;
+      });
+    }, 2000); // Update every 2 seconds
+
+    return () => clearInterval(interval);
+  }, [isEmailGenerationConfigured, emailGenerationProgress]);
 
   return (
     <div className="max-w-7xl mx-auto">

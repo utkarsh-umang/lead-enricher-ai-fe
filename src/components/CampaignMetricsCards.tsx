@@ -6,6 +6,7 @@ interface CampaignMetricsCardsProps {
   scrapingProgress: number;
   isScrapingConfigured: boolean;
   isEmailGenerationConfigured: boolean;
+  emailGenerationProgress?: number;
   estimatedTimeLeft?: string; 
   onConfigureScraping: () => void;
   onConfigureEmailGeneration: () => void;
@@ -16,6 +17,7 @@ const CampaignMetricsCards = ({
   scrapingProgress,
   isScrapingConfigured,
   isEmailGenerationConfigured,
+  emailGenerationProgress = 0,
   estimatedTimeLeft,
   onConfigureScraping,
   onConfigureEmailGeneration
@@ -124,7 +126,7 @@ const CampaignMetricsCards = ({
         )}
       </div>
 
-      {/* Card 3: Configure and Start Email Generation */}
+      {/* Card 3: Email Generation Progress */}
       <div 
         className="rounded-lg shadow-sm p-6"
         style={{
@@ -139,49 +141,72 @@ const CampaignMetricsCards = ({
             className="text-sm font-medium"
             style={{ color: theme.palette.text.secondary }}
           >
-            Email Generation
+            Email Generation Progress
           </h3>
           <Mail 
             className="h-6 w-6" 
             style={{ color: theme.palette.primary.main }}
           />
         </div>
-        <div className="mt-4">
-          <button
-            onClick={onConfigureEmailGeneration}
-            disabled={!isScrapingConfigured}
-            className="w-full flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium transition-colors outline-none focus:outline-none"
-            style={
-              !isScrapingConfigured
-                ? {
-                    backgroundColor: theme.palette.divider,
-                    color: theme.palette.text.disabled,
-                    cursor: 'not-allowed',
-                    border: 'none',
-                    outline: 'none'
-                  }
-                : {
-                    backgroundColor: theme.palette.primary.main,
-                    color: theme.palette.primary.contrastText,
-                    border: 'none',
-                    outline: 'none'
-                  }
-            }
-            onMouseEnter={(e) => {
-              if (isScrapingConfigured) {
-                e.currentTarget.style.backgroundColor = theme.palette.primary.dark;
+        {emailGenerationProgress === 0 ? (
+          <div className="mt-4">
+            <button
+              onClick={onConfigureEmailGeneration}
+              disabled={!isScrapingConfigured}
+              className="w-full flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium transition-colors outline-none focus:outline-none"
+              style={
+                !isScrapingConfigured
+                  ? {
+                      backgroundColor: theme.palette.divider,
+                      color: theme.palette.text.disabled,
+                      cursor: 'not-allowed',
+                      border: 'none',
+                      outline: 'none'
+                    }
+                  : {
+                      backgroundColor: theme.palette.primary.main,
+                      color: theme.palette.primary.contrastText,
+                      border: 'none',
+                      outline: 'none'
+                    }
               }
-            }}
-            onMouseLeave={(e) => {
-              if (isScrapingConfigured) {
-                e.currentTarget.style.backgroundColor = theme.palette.primary.main;
-              }
-            }}
-          >
-            <PlayCircle className="h-4 w-4 mr-2" />
-            Configure and Start Email Generation
-          </button>
-        </div>
+              onMouseEnter={(e) => {
+                if (isScrapingConfigured) {
+                  e.currentTarget.style.backgroundColor = theme.palette.primary.dark;
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (isScrapingConfigured) {
+                  e.currentTarget.style.backgroundColor = theme.palette.primary.main;
+                }
+              }}
+            >
+              <PlayCircle className="h-4 w-4 mr-2" />
+              Configure and Start Email Generation
+            </button>
+          </div>
+        ) : (
+          <>
+            <p 
+              className="text-3xl font-bold mb-2"
+              style={{ color: theme.palette.text.primary }}
+            >
+              {Math.round(emailGenerationProgress)}%
+            </p>
+            <div 
+              className="w-full rounded-full h-2"
+              style={{ backgroundColor: theme.palette.divider }}
+            >
+              <div
+                className="h-2 rounded-full transition-all"
+                style={{ 
+                  width: `${emailGenerationProgress}%`,
+                  backgroundColor: theme.palette.success.main
+                }}
+              ></div>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Card 4: Estimated Time Left - Only shown after both are configured */}
