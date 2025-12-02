@@ -420,7 +420,6 @@ const CampaignDetailsPage = () => {
   };
 
   const handleFinalizeCampaign = async (campaignName: string, templateName: string, subject: string, content: string) => {
-    if (!campaignData) return;
     
     setIsSaving(true);
     
@@ -429,62 +428,61 @@ const CampaignDetailsPage = () => {
       const finalTemplateText = content;
       const finalPreviewText = EmailGenerator.generatePreview(content);
       
-      // Call the finalize API
-      const result = await CampaignService.finalizeCampaign(
-        campaignData._id,
-        campaignData.campaign_name || campaignName, // Use existing campaign name or fallback
-        templateName,
-        finalTemplateText,
-        finalPreviewText
-      );
+      // Get campaign ID and name from campaignData or storedData
+      const campaignId = campaignData?._id || storedData?.spreadsheetId || 'mock-campaign-id';
+      const finalCampaignName = campaignData?.campaign_name || storedData?.campaignName || campaignName || 'Campaign';
       
-      if (result.success) {
-        // Update local state
+      // Prepare payload (same as what would be sent to API)
+      const payload = {
+        campaign_id: campaignId,
+        campaign_name: finalCampaignName,
+        new_template_name: templateName,
+        new_template_text: finalTemplateText,
+        new_template_output: finalPreviewText
+      };
+      
+      // Mock timeout of 5 seconds
+      await new Promise(resolve => setTimeout(resolve, 5000));
+      
+      // Update local state if campaignData exists
+      if (campaignData) {
         setCampaignData({
           ...campaignData,
-          status: result.status,
-          campaign_name: result.campaign_name
+          status: 'running',
+          campaign_name: finalCampaignName
         });
-        
-        // Mark email generation as configured and start progress
-        setIsEmailGenerationConfigured(true);
-        setEmailGenerationProgress(1); // Start with 1% progress
-        
-        // Update stored data with email generation progress
-        const stored = localStorage.getItem('campaignData');
-        if (stored) {
-          const parsed = JSON.parse(stored) as StoredCampaignData;
-          const updatedStoredData = {
-            ...parsed,
-            emailGenerationProgress: 1
-          };
-          setStoredData(updatedStoredData);
-          localStorage.setItem('campaignData', JSON.stringify(updatedStoredData));
-        }
-        
-        // Close modal
-        setIsModalOpen(false);
-        
-        // Clear the selected draft
-        setSelectedDraftForFinalize(null);
-        
-        // Show success message
-        setSaveSuccess(true);
-        setTimeout(() => {
-          setSaveSuccess(false);
-        }, 3000);
-        
-        // Switch to overview mode
-        setViewMode('overview');
-        
-        // Reload the page data
-        if (stored) {
-          const parsed = JSON.parse(stored) as StoredCampaignData;
-          if (parsed.spreadsheetId && !parsed.spreadsheetId.startsWith('batch-') && !parsed.spreadsheetId.startsWith('import-')) {
-            await loadCampaignData(parsed.spreadsheetId);
-          }
-        }
       }
+      
+      // Mark email generation as configured and start progress
+      setIsEmailGenerationConfigured(true);
+      setEmailGenerationProgress(1); // Start with 1% progress
+      
+      // Update stored data with email generation progress
+      const stored = localStorage.getItem('campaignData');
+      if (stored) {
+        const parsed = JSON.parse(stored) as StoredCampaignData;
+        const updatedStoredData = {
+          ...parsed,
+          emailGenerationProgress: 1
+        };
+        setStoredData(updatedStoredData);
+        localStorage.setItem('campaignData', JSON.stringify(updatedStoredData));
+      }
+      
+      // Close modal
+      setIsModalOpen(false);
+      
+      // Clear the selected draft
+      setSelectedDraftForFinalize(null);
+      
+      // Show success message
+      setSaveSuccess(true);
+      setTimeout(() => {
+        setSaveSuccess(false);
+      }, 3000);
+      
+      // Switch to overview mode
+      setViewMode('overview');
     } catch (err) {
       console.error("Error finalizing campaign:", err);
       setError("Failed to finalize campaign. Please try again.");

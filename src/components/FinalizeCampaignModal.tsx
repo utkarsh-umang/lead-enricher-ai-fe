@@ -63,6 +63,7 @@ const FinalizeModal = ({
 
   const handleSubmit = (e: any) => {
     e.preventDefault();
+    e.stopPropagation();
     
     // Validate inputs
     const newErrors = {
@@ -89,6 +90,8 @@ const FinalizeModal = ({
     // If no errors, submit
     if (!newErrors.templateName && !newErrors.subject && !newErrors.content) {
       onFinalize('', templateName, subject, content);
+    } else {
+      console.log('Validation failed, not calling onFinalize');
     }
   };
 
